@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<!-- 让它像 App：主屏幕图标、全屏运行、脱离浏览器外壳 -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="2048">
+<meta name="theme-color" content="#8f7a66">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<title>2048</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html, body { height:100%; }
+  body {
+    font-family:"PingFang SC","Microsoft YaHei","Helvetica Neue",Arial,sans-serif;
+    background:#faf8ef; color:#776e65;
+    display:flex; flex-direction:column; align-items:center;
+    user-select:none; -webkit-user-select:none;
+    -webkit-touch-callout:none;
+    overflow-x:hidden;
+    overscroll-behavior:none;      /* 禁止下拉回弹刷新 */
+    touch-action:manipulation;     /* 去掉双击缩放延迟 */
+  }
+  .wrap { width:min(92vw, 460px); padding:16px 0 32px; }
+  header { display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; row-gap:8px; }
+  h1 { font-size:52px; font-weight:800; }
+  .scores { display:flex; gap:8px; }
+  .score-box {
+    background:#bbada0; border-radius:8px; padding:6px 14px;
+    text-align:center; color:#fff; position:relative; min-width:76px;
+  }
+  .score-box span { display:block; font-size:12px; color:#eee4da; }
+  .score-box b { font-size:20px; }
+  .score-add {
+    position:absolute; left:50%; top:0; transform:translateX(-50%);
+    font-weight:700; color:#776e65; font-size:18px;
+    animation:floatUp .6s ease-out forwards; pointer-events:none;
+  }
+  @keyframes floatUp { from { opacity:1; top:0; } to { opacity:0; top:-34px; } }
+
+  .toolbar { display:flex; justify-content:space-between; gap:8px; margin:12px 0; flex-wrap:wrap; }
+  button {
+    font-family:inherit; border:none; cursor:pointer;
+    background:#8f7a66; color:#f9f6f2; font-size:16px; font-weight:700;
+    padding:10px 18px; border-radius:8px;
+  }
+  button:active { transform:scale(.96); }
+
+  #board {
+    position:relative; width:100%; aspect-ratio:1/1;
+    background:#bbada0; border-radius:10px;
+    touch-action:none;
+  }
+  .bg-cell { position:absolute; top:0; left:0; background:rgba(238,228,218,.35); border-radius:6px; }
+
+  .tile {
+    position:absolute; top:0; left:0;
+    transition:transform 110ms ease-in-out;
+    will-change:transform;
+  }
+  .tile-inner {
+    width:100%; height:100%; border-radius:6px;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; background:#eee4da; color:#776e65;
+  }
+  .tile-inner.new { animation:appear 160ms ease; }
+  .tile-inner.pop { animation:mergepop 160ms ease; }
+  @keyframes appear { 0% { transform:scale(0); } 100% { transform:scale(1); } }
+  @keyframes mergepop { 0% { transform:scale(1); } 50% { transform:scale(1.25); } 100% { transform:scale(1); } }
+
+  .v2    .tile-inner { background:#eee4da; color:#776e65; }
+  .v4    .tile-inner { background:#ede0c8; color:#776e65; }
+  .v8    .tile-inner { background:#f2b179; color:#f9f6f2; }
+  .v16   .tile-inner { background:#f59563; color:#f9f6f2; }
+  .v32   .tile-inner { background:#f67c5f; color:#f9f6f2; }
+  .v64   .tile-inner { background:#f65e3b; color:#f9f6f2; }
+  .v128  .tile-inner { background:#edcf72; color:#f9f6f2; }
+  .v256  .tile-inner { background:#edcc61; color:#f9f6f2; }
+  .v512  .tile-inner { background:#edc850; color:#f9f6f2; }
+  .v1024 .tile-inner { background:#edc53f; color:#f9f6f2; }
+  .v2048 .tile-inner { background:#edc22e; color:#f9f6f2; box-shadow:0 0 18px rgba(237,194,46,.65); }
+  .vsuper .tile-inner { background:#3c3a32; color:#f9f6f2; }
+
+  #overlay {
+    position:absolute; inset:0; border-radius:10px; z-index:10;
+    background:rgba(238,228,218,.8);
+    display:flex; flex-direction:column; align-items:center; justify-content:center;
+    gap:16px; animation:fadeIn .4s ease;
+  }
+  #overlay.hidden { display:none; }
+  #overlay.win { background:rgba(237,194,46,.6); color:#f9f6f2; }
+  #overlay .msg { font-size:36px; font-weight:800; }
+  #overlay .sub { font-size:16px; font-weight:600; }
+  #overlay .row { display:flex; gap:10px; }
+  @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
+
+  .hint { text-align:center; margin-top:14px; font-size:14px; color:#a89a8c; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>2048</h1>
+    <div class="scores">
+      <div class="score-box" id="score-box"><span>分数</span><b id="score">0</b></div>
+      <div class="score-box"><span>最高分</span><b id="best">0</b></div>
+      <div class="score-box"><span>今日剩余</span><b id="time-left">30:00</b></div>
+    </div>
+  </header>
+  <div class="toolbar">
+    <button onclick="location.href='../'">🏠 大厅</button>
+    <button id="fullscreen-btn">⛶ 全屏</button>
+    <button id="newgame">🔄 新游戏</button>
+    <button id="sound-btn">🔊 音效开</button>
+  </div>
+  <div id="board">
+    <div id="tiles"></div>
+    <div id="overlay" class="hidden">
+      <div class="msg" id="overlay-msg"></div>
+      <div class="sub" id="overlay-sub"></div>
+      <div class="row">
+        <button id="keepgoing">继续玩</button>
+        <button id="restart">再来一局</button>
+      </div>
+    </div>
+  </div>
+  <p class="hint">👆 手指滑动移动方块，相同数字会合并变大！每天可以玩 30 分钟～</p>
+</div>
+
+<script>
+(function () {
+  var SIZE = 4;
+  var SLIDE_MS = 110;
+
+  var board = document.getElementById('board');
+  var tilesEl = document.getElementById('tiles');
+  var scoreEl = document.getElementById('score');
+  var bestEl = document.getElementById('best');
+  var scoreBox = document.getElementById('score-box');
+  var overlay = document.getElementById('overlay');
+  var overlayMsg = document.getElementById('overlay-msg');
+  var keepBtn = document.getElementById('keepgoing');
+
+  var grid, score, nextId, won, animating;
+  var tiles = [];                 // 所有还活着的方块（含待清除的）
+  var metrics = { gap: 0, cell: 0 };
+
+  /* 存储容错：个别内置阅读器禁用 localStorage，退化为内存存储，保证游戏照常运行 */
+  var store = (function () {
+    try {
+      localStorage.setItem('__t', '1'); localStorage.removeItem('__t');
+      return localStorage;
+    } catch (e) {
+      var m = {};
+      return {
+        getItem: function (k) { return k in m ? m[k] : null; },
+        setItem: function (k, v) { m[k] = String(v); }
+      };
+    }
+  })();
+
+  var best = parseInt(store.getItem('best2048') || '0', 10);
+  bestEl.textContent = best;
+
+  /* ---------------- 音效（Web Audio 合成，无需外部文件） ---------------- */
+  var audioCtx = null;
+  var soundOn = store.getItem('sound2048') !== 'off';
+
+  function ensureAudio() {
+    if (!audioCtx) {
+      try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) {}
+    }
+    if (audioCtx && audioCtx.state === 'suspended') audioCtx.resume();
+  }
+  function tone(freq, dur, type, vol, delay) {
+    if (!soundOn || !audioCtx) return;
+    type = type || 'sine'; vol = vol || 0.12; delay = delay || 0;
+    var t = audioCtx.currentTime + delay;
+    var o = audioCtx.createOscillator();
+    var g = audioCtx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, t);
+    g.gain.setValueAtTime(vol, t);
+    g.gain.exponentialRampToValueAtTime(0.001, t + dur);
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(t); o.stop(t + dur + 0.02);
+  }
+  function soundMove()  { tone(220, 0.08, 'triangle', 0.06); tone(160, 0.10, 'triangle', 0.05, 0.02); }
+  function soundMerge(v){ var f = 200 + Math.log2(v) * 45; tone(f, 0.10, 'sine', 0.14); tone(f * 1.5, 0.14, 'sine', 0.12, 0.06); }
+  function soundWin()   { [523, 659, 784, 1047].forEach(function (f, i) { tone(f, 0.18, 'triangle', 0.14, i * 0.12); }); }
+  function soundLose()  { [400, 320, 240, 160].forEach(function (f, i) { tone(f, 0.22, 'sawtooth', 0.06, i * 0.15); }); }
+
+  /* ---------------- 布局 ---------------- */
+  var bgCells = [];
+  function buildBackground() {
+    for (var i = 0; i < SIZE * SIZE; i++) {
+      var d = document.createElement('div');
+      d.className = 'bg-cell';
+      board.insertBefore(d, tilesEl);
+      bgCells.push(d);
+    }
+  }
+  function computeMetrics() {
+    var w = board.clientWidth;
+    metrics.gap = Math.round(w * 0.025);
+    metrics.cell = (w - metrics.gap * (SIZE + 1)) / SIZE;
+  }
+  function posXY(r, c) {
+    return {
+      x: metrics.gap + c * (metrics.cell + metrics.gap),
+      y: metrics.gap + r * (metrics.cell + metrics.gap)
+    };
+  }
+  function fontSizeFor(v) {
+    var len = String(v).length, b = metrics.cell;
+    if (len <= 2) return Math.round(b * 0.45) + 'px';
+    if (len === 3) return Math.round(b * 0.36) + 'px';
+    return Math.round(b * 0.30) + 'px';
+  }
+  function layout() {
+    computeMetrics();
+    bgCells.forEach(function (d, i) {
+      var p = posXY(Math.floor(i / SIZE), i % SIZE);
+      d.style.width = metrics.cell + 'px';
+      d.style.height = metrics.cell + 'px';
+      d.style.transform = 'translate(' + p.x + 'px,' + p.y + 'px)';
+    });
+    tiles.forEach(function (t) {
+      var p = posXY(t.r, t.c);
+      t.el.style.width = metrics.cell + 'px';
+      t.el.style.height = metrics.cell + 'px';
+      t.el.style.transform = 'translate(' + p.x + 'px,' + p.y + 'px)';
+      t.inner.style.fontSize = fontSizeFor(t.value);
+    });
+  }
+
+  /* ---------------- 方块 ---------------- */
+  function colorClass(v) { return v > 2048 ? 'vsuper' : 'v' + v; }
+  function createTile(v, r, c, isNew) {
+    var el = document.createElement('div');
+    el.className = 'tile ' + colorClass(v);
+    el.style.width = metrics.cell + 'px';
+    el.style.height = metrics.cell + 'px';
+    var p = posXY(r, c);
+    el.style.transform = 'translate(' + p.x + 'px,' + p.y + 'px)';
+    var inner = document.createElement('div');
+    inner.className = 'tile-inner' + (isNew ? ' new' : '');
+    inner.textContent = v;
+    inner.style.fontSize = fontSizeFor(v);
+    el.appendChild(inner);
+    tilesEl.appendChild(el);
+    var t = { id: nextId++, value: v, r: r, c: c, el: el, inner: inner,
+              consumed: false, mergedThisMove: false, justMerged: false };
+    tiles.push(t);
+    return t;
+  }
+
+  /* ---------------- 游戏流程 ---------------- */
+  function newGame() {
+    tilesEl.innerHTML = '';
+    tiles = [];
+    grid = [];
+    for (var r = 0; r < SIZE; r++) grid.push([null, null, null, null]);
+    score = 0; won = false; nextId = 1; animating = false;
+    scoreEl.textContent = '0';
+    if (timeUp) { showTimeUp(); } else { hideOverlay(); }
+    spawnRandom();
+    spawnRandom();
+  }
+  function spawnRandom() {
+    var empty = [];
+    for (var r = 0; r < SIZE; r++)
+      for (var c = 0; c < SIZE; c++)
+        if (!grid[r][c]) empty.push({ r: r, c: c });
+    if (!empty.length) return;
+    var p = empty[Math.floor(Math.random() * empty.length)];
+    var v = Math.random() < 0.9 ? 2 : 4;
+    grid[p.r][p.c] = createTile(v, p.r, p.c, true);
+  }
+  function linesFor(dir) {
+    // 每条线按“移动方向的最前端排在最前”的顺序给出格子坐标
+    var lines = [];
+    if (dir === 'left' || dir === 'right') {
+      for (var r = 0; r < SIZE; r++) {
+        var line = [];
+        for (var i = 0; i < SIZE; i++)
+          line.push({ r: r, c: dir === 'left' ? i : SIZE - 1 - i });
+        lines.push(line);
+      }
+    } else {
+      for (var c = 0; c < SIZE; c++) {
+        var col = [];
+        for (var j = 0; j < SIZE; j++)
+          col.push({ r: dir === 'up' ? j : SIZE - 1 - j, c: c });
+        lines.push(col);
+      }
+    }
+    return lines;
+  }
+  function canMove() {
+    for (var r = 0; r < SIZE; r++)
+      for (var c = 0; c < SIZE; c++) {
+        var t = grid[r][c];
+        if (!t) return true;
+        if (r + 1 < SIZE && grid[r + 1][c] && grid[r + 1][c].value === t.value) return true;
+        if (c + 1 < SIZE && grid[r][c + 1] && grid[r][c + 1].value === t.value) return true;
+      }
+    return false;
+  }
+
+  function move(dir) {
+    if (animating || timeUp) return;
+    ensureAudio();
+    var moved = false;
+    var consumed = [];
+    var gained = 0, maxMerged = 0, hit2048 = false;
+
+    var lines = linesFor(dir);
+    for (var li = 0; li < lines.length; li++) {
+      var line = lines[li];
+      var lineTiles = [];
+      for (var k = 0; k < line.length; k++) {
+        var cell = grid[line[k].r][line[k].c];
+        if (cell) lineTiles.push(cell);
+      }
+      var target = 0, last = null;
+      for (var ti = 0; ti < lineTiles.length; ti++) {
+        var t = lineTiles[ti];
+        if (last && !last.mergedThisMove && last.value === t.value) {
+          // t 滑到 last 的位置后被吸收
+          t.r = last.r; t.c = last.c;
+          t.consumed = true;
+          consumed.push(t);
+          last.value *= 2;
+          last.mergedThisMove = true;
+          last.justMerged = true;
+          gained += last.value;
+          if (last.value > maxMerged) maxMerged = last.value;
+          if (last.value >= 2048 && !won) hit2048 = true;
+          moved = true;
+        } else {
+          var dest = line[target];
+          if (dest.r !== t.r || dest.c !== t.c) moved = true;
+          t.r = dest.r; t.c = dest.c;
+          last = t; target++;
+        }
+      }
+    }
+    if (!moved) return;
+    animating = true;
+    lastActive = Date.now();   // 有实际操作，刷新计时起点
+
+    // 重建棋盘（被吸收的方块不再占位）
+    var ng = [];
+    for (var r = 0; r < SIZE; r++) ng.push([null, null, null, null]);
+    tiles.forEach(function (t) { if (!t.consumed) ng[t.r][t.c] = t; });
+    grid = ng;
+
+    // 所有方块滑到新位置（CSS transition 负责动画）
+    tiles.forEach(function (t) {
+      var p = posXY(t.r, t.c);
+      t.el.style.transform = 'translate(' + p.x + 'px,' + p.y + 'px)';
+    });
+
+    setTimeout(function () {
+      // 清掉被吸收的方块
+      consumed.forEach(function (t) {
+        t.el.remove();
+        tiles.splice(tiles.indexOf(t), 1);
+      });
+      // 合并后的方块：更新数字、变色、弹一下
+      tiles.forEach(function (t) {
+        if (t.justMerged) {
+          t.justMerged = false;
+          t.inner.textContent = t.value;
+          t.inner.style.fontSize = fontSizeFor(t.value);
+          t.el.className = 'tile ' + colorClass(t.value);
+          t.inner.classList.remove('pop');
+          void t.inner.offsetWidth;   // 重新触发动画
+          t.inner.classList.add('pop');
+        }
+        t.mergedThisMove = false;
+      });
+      // 计分
+      if (gained > 0) {
+        score += gained;
+        scoreEl.textContent = score;
+        floatScore(gained);
+        if (score > best) {
+          best = score;
+          bestEl.textContent = best;
+          store.setItem('best2048', String(best));
+        }
+      }
+      if (maxMerged > 0) soundMerge(maxMerged); else soundMove();
+
+      spawnRandom();
+      animating = false;
+
+      if (hit2048) { won = true; showOverlay(true); soundWin(); }
+      else if (!canMove()) { showOverlay(false); soundLose(); }
+    }, SLIDE_MS + 20);
+  }
+
+  function floatScore(n) {
+    var s = document.createElement('span');
+    s.className = 'score-add';
+    s.textContent = '+' + n;
+    scoreBox.appendChild(s);
+    s.addEventListener('animationend', function () { s.remove(); });
+  }
+  function showOverlay(isWin) {
+    overlayKind = isWin ? 'win' : 'lose';
+    overlayMsg.textContent = isWin ? '🎉 你赢啦！' : '游戏结束';
+    overlaySub.textContent = isWin ? '' : '本局得分 ' + score;
+    overlay.classList.toggle('win', isWin);
+    keepBtn.style.display = isWin ? '' : 'none';
+    restartBtn.style.display = '';
+    overlay.classList.remove('hidden');
+  }
+  function hideOverlay() { overlay.classList.add('hidden'); }
+
+  /* ---------------- 每日限时：每自然日累计 30 分钟 ---------------- */
+  var DAILY_LIMIT = 30 * 60;   // 每天最多玩的秒数
+  var IDLE_PAUSE  = 3 * 60;    // 超过 3 分钟没操作就暂停计时
+  var timerEl = document.getElementById('time-left');
+  var restartBtn = document.getElementById('restart');
+  var overlaySub = document.getElementById('overlay-sub');
+  var overlayKind = null;
+  var playSecs = 0, todayStr = '', lastActive = Date.now(), timeUp = false;
+
+  function today() {
+    var d = new Date();
+    return d.getFullYear() + '-' + (d.getMonth() + 1) + '-' + d.getDate();
+  }
+  function loadPlayTime() {
+    todayStr = today();
+    if (store.getItem('t2048date') !== todayStr) {   // 新的一天，清零
+      store.setItem('t2048date', todayStr);
+      store.setItem('t2048secs', '0');
+    }
+    playSecs = parseInt(store.getItem('t2048secs') || '0', 10) || 0;
+    timeUp = playSecs >= DAILY_LIMIT;
+  }
+  function savePlayTime() { store.setItem('t2048secs', String(playSecs)); }
+  function showTimeUp() {
+    overlayKind = 'timeup';
+    overlayMsg.textContent = '⏰ 今天的时间用完啦';
+    overlaySub.textContent = '小眼睛休息一下，明天再来玩！';
+    overlay.classList.remove('win');
+    keepBtn.style.display = 'none';
+    restartBtn.style.display = 'none';
+    overlay.classList.remove('hidden');
+  }
+  function renderTimer() {
+    var left = Math.max(0, DAILY_LIMIT - playSecs);
+    var m = Math.floor(left / 60), s = left % 60;
+    timerEl.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+    timerEl.style.color = left <= 300 ? '#f65e3b' : '';   // 剩 5 分钟变红
+  }
+  function tick() {
+    if (today() !== todayStr) {            // 跨过零点，自动恢复
+      loadPlayTime();
+      if (overlayKind === 'timeup') hideOverlay();
+    }
+    var idle = (Date.now() - lastActive) / 1000 > IDLE_PAUSE;
+    if (!document.hidden && !idle && !timeUp) {
+      playSecs++;
+      if (playSecs % 5 === 0) savePlayTime();
+      if (playSecs >= DAILY_LIMIT) {
+        timeUp = true;
+        savePlayTime();
+        showTimeUp();
+        soundLose();
+      }
+    }
+    renderTimer();
+  }
+
+  loadPlayTime();
+  renderTimer();
+  if (timeUp) showTimeUp();
+  setInterval(tick, 1000);
+  document.addEventListener('visibilitychange', function () { if (document.hidden) savePlayTime(); });
+  window.addEventListener('pagehide', savePlayTime);
+
+  /* ---------------- 输入：键盘 + 触屏滑动 ---------------- */
+  var keyMap = {
+    ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right',
+    w: 'up', s: 'down', a: 'left', d: 'right',
+    W: 'up', S: 'down', A: 'left', D: 'right'
+  };
+  document.addEventListener('keydown', function (e) {
+    var d = keyMap[e.key];
+    if (d) { e.preventDefault(); move(d); }
+  });
+
+  var tsx = 0, tsy = 0;
+  board.addEventListener('touchstart', function (e) {
+    ensureAudio();
+    var t = e.touches[0];
+    tsx = t.clientX; tsy = t.clientY;
+  }, { passive: true });
+  board.addEventListener('touchmove', function (e) { e.preventDefault(); }, { passive: false });
+  board.addEventListener('touchend', function (e) {
+    var t = e.changedTouches[0];
+    var dx = t.clientX - tsx, dy = t.clientY - tsy;
+    var ax = Math.abs(dx), ay = Math.abs(dy);
+    if (Math.max(ax, ay) < 24) return;
+    if (ax > ay) move(dx > 0 ? 'right' : 'left');
+    else move(dy > 0 ? 'down' : 'up');
+  });
+
+  /* Mac/电脑触控板：双指滑动（滚轮事件）控制方向。
+     一次手势只触发一步：手势停 160ms 后才解锁，避免连滑。 */
+  var wheelX = 0, wheelY = 0, wheelTimer = null, wheelLock = false;
+  board.addEventListener('wheel', function (e) {
+    e.preventDefault();
+    if (wheelLock) return;
+    wheelX += e.deltaX; wheelY += e.deltaY;
+    clearTimeout(wheelTimer);
+    wheelTimer = setTimeout(function () { wheelX = 0; wheelY = 0; wheelLock = false; }, 160);
+    if (Math.max(Math.abs(wheelX), Math.abs(wheelY)) < 40) return;
+    var d = Math.abs(wheelX) > Math.abs(wheelY)
+      ? (wheelX > 0 ? 'right' : 'left')
+      : (wheelY > 0 ? 'down' : 'up');
+    wheelLock = true; wheelX = 0; wheelY = 0;
+    move(d);
+  }, { passive: false });
+
+  /* ---------------- 按钮 ---------------- */
+  document.getElementById('newgame').addEventListener('click', function () { ensureAudio(); newGame(); });
+  document.getElementById('restart').addEventListener('click', function () { ensureAudio(); newGame(); });
+  keepBtn.addEventListener('click', hideOverlay);
+
+  var soundBtn = document.getElementById('sound-btn');
+  function renderSoundBtn() { soundBtn.textContent = soundOn ? '🔊 音效开' : '🔇 音效关'; }
+  soundBtn.addEventListener('click', function () {
+    soundOn = !soundOn;
+    store.setItem('sound2048', soundOn ? 'on' : 'off');
+    renderSoundBtn();
+    if (soundOn) { ensureAudio(); tone(440, 0.08, 'sine', 0.1); }
+  });
+
+  /* 全屏按钮：隐去浏览器外壳，接近 App 观感；设备不支持则隐藏按钮 */
+  var fsBtn = document.getElementById('fullscreen-btn');
+  if (!document.fullscreenEnabled && !document.webkitFullscreenEnabled) {
+    fsBtn.style.display = 'none';
+  }
+  fsBtn.addEventListener('click', function () {
+    var doc = document, el = doc.documentElement;
+    if (doc.fullscreenElement || doc.webkitFullscreenElement) {
+      (doc.exitFullscreen || doc.webkitExitFullscreen).call(doc);
+    } else {
+      (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+    }
+  });
+
+  /* 注册离线缓存（仅在 http://localhost 或 https 下生效） */
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js').catch(function () {});
+  }
+
+  /* ---------------- 启动 ---------------- */
+  window.addEventListener('resize', layout);
+  buildBackground();
+  layout();
+  newGame();
+  renderSoundBtn();
+})();
+</script>
+</body>
+</html>
