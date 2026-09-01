@@ -20,8 +20,15 @@
     display:flex; flex-direction:column; align-items:center;
     user-select:none; -webkit-user-select:none;
   }
-  h1 { color:#776e65; margin:48px 0 8px; font-size:36px; }
-  .sub { color:#a89a8c; margin:0 0 36px; font-size:15px; }
+  h1 { color:#776e65; margin:40px 0 8px; font-size:36px; }
+  .sub { color:#a89a8c; margin:0 0 24px; font-size:15px; }
+  .toolbar { margin-bottom:20px; }
+  button {
+    font-family:inherit; border:none; cursor:pointer;
+    background:#8f7a66; color:#f9f6f2; font-size:16px; font-weight:700;
+    padding:10px 18px; border-radius:8px;
+  }
+  button:active { transform:scale(.96); }
   .grid {
     display:grid; gap:16px; width:min(92vw, 560px);
     grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));
@@ -40,6 +47,7 @@
 <body>
   <h1>🎮 游戏大厅</h1>
   <p class="sub">点一个开始玩吧！</p>
+  <div class="toolbar"><button id="fs-btn">⛶ 全屏进入</button></div>
   <div class="grid">
     <!-- 以后每加一个游戏，复制下面这个卡片改三处：链接、图标、名字 -->
     <a class="card" href="./2048/">
@@ -49,6 +57,18 @@
   </div>
 <script>
 if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function () {}); }
+
+/* 全屏按钮：让"像 App"更进一步（设备支持才显示） */
+var fsBtn = document.getElementById('fs-btn');
+if (!document.fullscreenEnabled && !document.webkitFullscreenEnabled) fsBtn.style.display = 'none';
+fsBtn.addEventListener('click', function () {
+  var doc = document, el = doc.documentElement;
+  if (doc.fullscreenElement || doc.webkitFullscreenElement) {
+    (doc.exitFullscreen || doc.webkitExitFullscreen).call(doc);
+  } else {
+    (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
+  }
+});
 </script>
 </body>
 </html>

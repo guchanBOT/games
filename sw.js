@@ -1,6 +1,6 @@
 /* 游戏大厅的离线缓存（作用域：网站根目录，不管各游戏子目录，它们有自己的 sw.js）。
    大厅有改动时把 lobby-v1 改成 lobby-v2、v3…… */
-var CACHE = 'lobby-v1';
+var CACHE = 'lobby-v2';
 var FILES = ['./', './index.html', './manifest.json',
              './lobby-icon-180.png', './lobby-icon-192.png', './lobby-icon-512.png'];
 
