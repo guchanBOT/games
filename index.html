@@ -43,7 +43,7 @@
   }
   @keyframes floatUp { from { opacity:1; top:0; } to { opacity:0; top:-34px; } }
 
-  .toolbar { display:flex; justify-content:space-between; gap:8px; margin:12px 0; }
+  .toolbar { display:flex; justify-content:space-between; gap:8px; margin:12px 0; flex-wrap:wrap; }
   button {
     font-family:inherit; border:none; cursor:pointer;
     background:#8f7a66; color:#f9f6f2; font-size:16px; font-weight:700;
@@ -113,6 +113,7 @@
     </div>
   </header>
   <div class="toolbar">
+    <button onclick="location.href='../'">🏠 大厅</button>
     <button id="fullscreen-btn">⛶ 全屏</button>
     <button id="newgame">🔄 新游戏</button>
     <button id="sound-btn">🔊 音效开</button>
