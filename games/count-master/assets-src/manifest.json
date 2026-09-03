@@ -1,0 +1,14 @@
+{
+  "style": "cute flat vector cartoon style for a kids mobile game, thick clean outlines, bright saturated colors, simple soft shading, front view, full body, standing, cheerful",
+  "bg": "solid magenta background (#FF00FF)",
+  "rules": "每个角色分开站、互不重叠、之间留宽间隙；不要文字、不要道具、不要阴影投射到别人身上",
+  "sheets": [
+    {"name": "chars", "items": [
+      {"file": "dora.png",   "prompt": "a chubby blue robot cat mascot: big round blue head and round blue body, white oval face, red round nose, six thin whiskers, red collar with a yellow bell, white round belly with a pocket line, tiny arms and feet, big friendly eyes"},
+      {"file": "nobita.png", "prompt": "a 10-year-old cartoon boy with big round glasses, short black hair, yellow polo shirt, blue shorts, red shoes, timid happy smile"},
+      {"file": "shizuka.png","prompt": "a cartoon girl with black twin pigtails, pink dress, white socks, red shoes, gentle sweet smile"},
+      {"file": "suneo.png",  "prompt": "a cartoon boy with a pointy fox-like face, two pointy swept-up black hair tufts, green shirt, smug proud smile"},
+      {"file": "gian.png",   "prompt": "a big chubby cartoon boy, much bigger and wider than the others, orange shirt with two dark horizontal stripes, black buzz-cut hair, thick angry eyebrows, wide grin, arms akimbo, bossy tough look"}
+    ]}
+  ]
+}
