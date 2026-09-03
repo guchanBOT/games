@@ -93,7 +93,7 @@
 <script>
 'use strict';
 /* 游戏版本号：bump-version.sh 会同步改 sw.js 和 manifest.json */
-const GAME_VER = '1.0.0';
+const GAME_VER = '1.0.1';
 /* ================= 基础 ================= */
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 let W = 0, H = 0;
@@ -370,7 +370,10 @@ function todayStr(){
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0')
        + '-' + String(d.getDate()).padStart(2,'0');
 }
-const timeKey = () => 'cm_time_' + todayStr();
+/* 家长重置当日限时：把 TIME_SALT 换个值（r1→r2→…），设备上的旧计时记录即作废、当天重新计 30 分钟。
+   只影响计时键 cm_time_<salt>_<日期>，关卡/星星/铜锣烧等进度键（cm_unlock、cm_star_*、cm_coins…）不动。 */
+const TIME_SALT = 'r1';
+const timeKey = () => 'cm_time_' + TIME_SALT + '_' + todayStr();
 let usedSec = +(localStorage.getItem(timeKey()) || 0);
 let lastSave = 0, lockPending = false, lastShownMin = -1;
 function remainSec(){ return Math.max(0, DAY_LIMIT - usedSec); }
