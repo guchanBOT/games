@@ -1,0 +1,200 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e3]:
+    - navigation [ref=e4]:
+      - generic [ref=e5]:
+        - generic [ref=e6]:
+          - button "Toggle Sidebar" [ref=e7] [cursor=pointer]
+          - link [ref=e9] [cursor=pointer]:
+            - /url: /
+            - img "Puzzio" [ref=e10]
+        - textbox "Search games..." [ref=e12]
+  - complementary [ref=e13]:
+    - navigation [ref=e14]:
+      - link "Home" [ref=e15] [cursor=pointer]:
+        - /url: /
+      - link "New" [ref=e19] [cursor=pointer]:
+        - /url: /new-games
+      - link "Popular Games" [ref=e23] [cursor=pointer]:
+        - /url: /trending
+      - link "Action" [ref=e26] [cursor=pointer]:
+        - /url: /c/action
+      - link "Arcade" [ref=e32] [cursor=pointer]:
+        - /url: /c/arcade
+      - link "Puzzle" [ref=e35] [cursor=pointer]:
+        - /url: /c/puzzle
+      - link "Clicker" [ref=e39] [cursor=pointer]:
+        - /url: /c/clicker
+      - link "Driving" [ref=e42] [cursor=pointer]:
+        - /url: /c/driving
+      - link "Simulation" [ref=e47] [cursor=pointer]:
+        - /url: /c/simulation
+      - link "Adventure" [ref=e51] [cursor=pointer]:
+        - /url: /c/adventure
+      - link "Casual" [ref=e55] [cursor=pointer]:
+        - /url: /c/casual
+      - link "Shooting" [ref=e60] [cursor=pointer]:
+        - /url: /c/shooting
+      - link "Sports" [ref=e63] [cursor=pointer]:
+        - /url: /c/sports
+      - link "Beauty" [ref=e70] [cursor=pointer]:
+        - /url: /c/beauty
+      - link "Strategy" [ref=e73] [cursor=pointer]:
+        - /url: /c/strategy
+      - link "Word" [ref=e78] [cursor=pointer]:
+        - /url: /c/word
+      - link ".io" [ref=e81] [cursor=pointer]:
+        - /url: /c/.io
+      - link "Board" [ref=e84] [cursor=pointer]:
+        - /url: /c/board
+    - generic [ref=e87]:
+      - link "Contact us" [ref=e88] [cursor=pointer]:
+        - /url: /contact
+      - generic [ref=e92]:
+        - link "My Favorites" [ref=e93] [cursor=pointer]:
+          - /url: /favorites
+        - link "About" [ref=e96] [cursor=pointer]:
+          - /url: /about-us
+        - link "Terms & conditions" [ref=e99] [cursor=pointer]:
+          - /url: /terms
+        - link "Privacy" [ref=e103] [cursor=pointer]:
+          - /url: /privacy
+        - link "All games" [ref=e106] [cursor=pointer]:
+          - /url: /
+      - paragraph [ref=e110]: © 2025 Puzzio.io
+  - main [ref=e111]:
+    - generic [ref=e113]:
+      - generic [ref=e114]:
+        - generic [ref=e119]:
+          - 'img "Play Count Masters: Stickman Games online free. Lead your stickman army in this fun casual browser game with math puzzles." [ref=e121]'
+          - 'heading "Count Masters: Stickman Games" [level=2] [ref=e122]'
+          - button "Play Now" [ref=e123] [cursor=pointer]
+          - paragraph [ref=e129]: Powered by Puzzio.io
+        - generic [ref=e130]:
+          - 'heading "Count Masters: Stickman Games" [level=1] [ref=e131]'
+          - generic [ref=e132]:
+            - generic [ref=e133]: "Rating:"
+            - generic [ref=e137]: "Played:"
+            - generic [ref=e140]:
+              - generic [ref=e141]: "Released:"
+              - generic [ref=e142]: March 2026
+            - generic [ref=e143]:
+              - generic [ref=e144]: "Last Updated:"
+              - generic [ref=e145]: September 2026
+            - generic [ref=e146]:
+              - generic [ref=e147]: "Technology:"
+              - generic [ref=e148]: HTML5
+            - generic [ref=e149]:
+              - generic [ref=e150]: "Platform:"
+              - generic [ref=e151]: Browser (desktop, mobile, tablet)
+            - generic [ref=e152]:
+              - generic [ref=e153]: "Classification:"
+              - generic [ref=e154]:
+                - link "Games" [ref=e155] [cursor=pointer]:
+                  - /url: /
+                - generic [ref=e156]: »
+                - link "Casual" [ref=e157] [cursor=pointer]:
+                  - /url: /c/casual
+            - generic [ref=e159]:
+              - link "Casual" [ref=e160] [cursor=pointer]:
+                - /url: /c/casual
+              - link "Mobile" [ref=e164] [cursor=pointer]:
+                - /url: /t/mobile
+              - link "Avoid" [ref=e168] [cursor=pointer]:
+                - /url: /t/avoid
+              - link "Running" [ref=e172] [cursor=pointer]:
+                - /url: /t/running
+              - link "Platform" [ref=e176] [cursor=pointer]:
+                - /url: /t/platform
+              - link "Math" [ref=e180] [cursor=pointer]:
+                - /url: /t/math
+              - link "Brain" [ref=e184] [cursor=pointer]:
+                - /url: /t/brain
+              - link "Stickman" [ref=e188] [cursor=pointer]:
+                - /url: /t/stickman
+              - link "Arcade" [ref=e192] [cursor=pointer]:
+                - /url: /t/arcade
+        - generic [ref=e196]:
+          - heading "Description" [level=2] [ref=e197]
+          - generic [ref=e198]:
+            - paragraph [ref=e199]: "Go ahead and play Count Masters: Stickman Games online for free, a fast-paced browser game that doesn't need a download. We've sunk over 200 hours into testing this addictive casual game (and loved every minute), discovering that its core multiplication mechanic is deceptively strategic. Here's the thing, it's not just about getting bigger numbers-it's about exponential growth. The game's custom WebGL engine uses a lightweight physics model to render hundreds of stickmen smoothly, achieving a consistent 60fps even on older hardware. We've verified its performance across all major browsers, so you can just click to play instantly."
+            - 'heading "What is Count Masters: Stickman Games?" [level=3] [ref=e200]'
+            - paragraph [ref=e201]: We wanted to create a casual game that felt simple to learn but had a really high skill ceiling. The idea came from watching crowd simulations and thinking, 'What if the player controlled the flow?' After six months of development (and a whole lot of coffee) and analyzing feedback from over 1,500 player sessions, we launched Count Masters. Our primary goal was to make a free to play HTML5 game that loaded in under three seconds. We achieved this by optimizing asset delivery, which slashed our initial payload size by 60%.
+            - paragraph [ref=e202]: One of our biggest development challenges was ensuring the stickman AI didn't cause performance drops. The initial version struggled on mobile, with frame rates dipping below 30fps with more than 100 units. So, we completely rewrote the pathfinding logic to use a simplified collision system, a change that boosted performance by 40% on both desktop and mobile browsers. This change came directly from player feedback requesting a smoother experience during the final castle clash, a part of the game that now runs flawlessly.
+            - paragraph [ref=e203]: We believe in being totally transparent. This web game is completely free, with no in-game purchases or hidden costs. It's an unblocked game, designed for instant play anywhere. There's no registration or sign up needed. Simple, right? We've ensured it runs perfectly on Chrome, Firefox, Safari, and Edge, so whether you're on a PC or an iOS device, you get the same great experience. Just load it up and start playing.
+            - 'heading "Count Masters: Stickman Games Gameplay" [level=3] [ref=e204]'
+            - paragraph [ref=e205]: The core loop is pretty straightforward-guide your growing stickman crowd through a series of gates and obstacles. Your main objective is to have a larger army than the enemy crowd waiting at the finish line. Our design philosophy was 'instant fun, lasting strategy', which we reinforced with a one-touch control scheme.
+            - paragraph [ref=e206]: The game's systems all revolve around simple math. You'll encounter gates that multiply, add, subtract, or divide your stickman count. You also need to dodge static and moving obstacles like saw blades and swinging hammers that can decimate your numbers. The audio-visual feedback is a huge deal here-a satisfying 'pop' sound and particle effect confirm a successful multiplication, reinforcing positive choices for the player.So what makes it unique? It's our 'crowd cohesion' algorithm. We developed this system so that your stickmen don't just run in a blob. They dynamically spread out to hit wider gates and bunch up to navigate narrow paths. We noticed in testing that players who master this subtle control can gain an extra 10-15% on their final count by optimizing their pathing a split second before hitting a gate.
+            - heading "Platform" [level=3] [ref=e207]
+            - paragraph [ref=e208]: "You can play this game right in your web browser, whether you're using a desktop, laptop, tablet, or mobile device. We've optimized Count Masters: Stickman Games for Chrome, Firefox, Safari, and Edge, ensuring smooth 60fps performance across all platforms. Built with HTML5 and WebGL technology, this browser game requires no downloads, plugins, or installations - simply load the page and start playing instantly."
+            - 'heading "How to Play Count Masters: Stickman Games" [level=3] [ref=e209]'
+            - paragraph [ref=e210]: "Primary Objective: Increase your stickman count by running through the best gates. Your goal is to defeat the rival crowd and the King-stickman at the end. You lose if your count drops to zero or if the enemy's count is higher in the final clash."
+            - paragraph [ref=e211]: The core mechanic involves dragging your finger or mouse left and right to steer your entire crowd. You'll need to make quick decisions, choosing between, for example, a '+50' gate and a 'x2' gate. You must also guide your army around red obstacles that reduce your numbers. A typical level lasts around 60-90 seconds, culminating in an automated battle where your final count is pitted against the enemy's.
+            - paragraph [ref=e212]: "Here's a fundamental strategy we discovered during development (and it's a big one): focus on your starting moves. The first gate choice often has the biggest impact. Our data shows that players who successfully double their initial army of 10 within the first 5 seconds are 70% more likely to win the level. A common mistake is being too cautious-sometimes you have to sacrifice a few stickmen to a minor obstacle to line up for a massive multiplication gate."
+            - heading "Controls" [level=3] [ref=e213]
+            - paragraph [ref=e214]: "Desktop Controls:"
+            - list [ref=e215]:
+              - listitem [ref=e216]: "Mouse Drag (Left/Right): Steer your stickman crowd."
+              - listitem [ref=e217]: "A/D Keys or Left/Right Arrow Keys: An alternative way to steer the crowd."
+            - paragraph [ref=e218]: "Mobile & Tablet:"
+            - list [ref=e219]:
+              - listitem [ref=e220]: "Touch and Drag: Swipe your finger left and right on the screen to guide your army."
+            - 'heading "Tips and Tricks for Count Masters: Stickman Games" [level=3] [ref=e221]'
+            - list [ref=e222]:
+              - listitem [ref=e223]: Prioritise Multiplication. A 'x2' gate is always better than a '+100' gate if your current count is over 50. We designed the levels this way to reward exponential thinking. This simple technique can improve your final army size by over 200%.
+              - listitem [ref=e224]: Widen Your Formation. Just before a gate, spread your army out by moving side-to-side quickly. This ensures more of your stickmen pass through the gate simultaneously, maximizing its effect, especially on addition gates.
+              - listitem [ref=e225]: Sacrificial Pathing. Don't be afraid to lose 5-10 stickmen to an obstacle if it positions you for a 'x3' or 'x4' gate right after. The net gain is almost always worth it (trust us on this). Our internal metrics show this is a key strategy for 90% of high-scoring players.
+              - listitem [ref=e226]: Observe Enemy Strength. Before the final clash, you can see the enemy's number. If it's only slightly lower than yours, try to engage them on a narrow front to give your superior numbers an advantage in the fight.
+              - listitem [ref=e227]: The Final Boss Feint. To beat the King-stickman, steer the bulk of your army to one side at the last second. The king will charge that spot, leaving the path to the castle on the other side less defended for the rest of your troops.
+            - 'heading "Features of Count Masters: Stickman Games" [level=3] [ref=e228]'
+            - list [ref=e229]:
+              - listitem [ref=e230]: Dynamic Crowd Physics Engine. We poured three months into developing a custom physics system that allows hundreds of units to move cohesively without lag. This technology allows for the massive clashes that define the game's later levels, a feature many other web games struggle with.
+              - listitem [ref=e231]: Procedural Level Generation. While the core layout is fixed, obstacle placement has a 15% random variation. We implemented this to keep players engaged, as it prevents pure muscle memory from dominating strategy. Players benefit from a fresh challenge each time.
+              - listitem [ref=e232]: Instant-Load Technology. The entire game is optimized to load in under 2 seconds on a standard connection. How did we do it? We used aggressive asset compression and a streamlined WebGL initialization process, reducing initial wait times by over 50% compared to our first build.
+              - listitem [ref=e233]: Responsive One-Touch Controls. The control system was refined over 40 iterations based on player feedback (yes, really). It's designed to be pixel-perfect on any screen size, from a large desktop monitor to a small mobile phone, ensuring precise movement is always possible.
+              - listitem [ref=e234]: Satisfying Haptic & Audio Feedback. Every successful multiplication and enemy defeat is paired with tuned audio and visual cues. We found this increased player satisfaction scores by 25% in our A/B testing, making the core gameplay loop more rewarding.
+            - paragraph [ref=e235]: "Count Masters: Stickman Games isn't just about reflexes-it's a test of quick, strategic decision-making wrapped in an easy to play package. The game's strength is its accessibility as a free online title that requires no installation. It’s an unblocked, fast-loading, and incredibly addictive casual game you can enjoy anywhere. If you’re looking for a browser game you can master, this is it. Ready to lead your army? Click to play now and start building your stickman empire!"
+            - paragraph [ref=e236]:
+              - text: "So, what are you waiting for? Give Count Masters: Stickman Games a try and see if you can dominate! Looking for more?"
+              - 'link "Land Explorers: Merge & Build" [ref=e237] [cursor=pointer]':
+                - /url: /game/land-explorers-merge-build
+              - text: is a blast if you're into Casual games, and
+              - link "Merge! Dragons vs Knights" [ref=e238] [cursor=pointer]:
+                - /url: /game/merge-dragons-vs-knights
+              - text: offers a cool twist on the classic formula. Check out our
+              - link "Casual games" [ref=e239] [cursor=pointer]:
+                - /url: /c/casual
+              - text: for even more options!
+        - generic [ref=e240]:
+          - heading "Frequently Asked Questions" [level=2] [ref=e241]
+          - generic [ref=e242]:
+            - generic [ref=e243]:
+              - 'button "Is Count Masters: Stickman Games free to play?" [ref=e244] [cursor=pointer]'
+              - generic: Yes, it's completely free online. There are no hidden costs, in-app purchases, or subscription fees. We offer the full game with no registration required, so you can play instantly without spending anything.
+            - generic [ref=e249]:
+              - 'button "Can I play Count Masters: Stickman Games on mobile and PC?" [ref=e250] [cursor=pointer]'
+              - generic: Absolutely. As a modern browser game, it's built to run on any device with a web browser, including desktop, mobile, and tablet. We've optimised it for Chrome, Firefox, Safari, and Edge, so no installation is needed.
+            - generic [ref=e255]:
+              - 'button "Is Count Masters: Stickman Games unblocked?" [ref=e256] [cursor=pointer]'
+              - generic: Yes, we've designed it to be an accessible and unblocked game. It should work on most networks, including at school or work, as it doesn't require any special permissions or downloads to run, just a standard internet browser.
+            - generic [ref=e261]:
+              - 'button "How do I start playing Count Masters: Stickman Games?" [ref=e262] [cursor=pointer]'
+              - generic: It's simple. Just open the game page in your browser and click to play. The game offers instant play with no download or installation required, so you can jump straight into the action in seconds.
+            - generic [ref=e267]:
+              - button "What's the best strategy for choosing between multiplication and addition gates?" [ref=e268] [cursor=pointer]
+              - generic: Always choose multiplication once your crowd is larger than the addition value divided by the multiplier. For instance, with a 'x2' gate versus a '+100' gate, the 'x2' is better as soon as you have more than 50 stickmen. This exponential growth is key to winning.
+        - heading "Gameplay Video" [level=2] [ref=e274]
+        - generic [ref=e277]:
+          - heading "Comments (0)" [level=3] [ref=e278]
+          - generic [ref=e279]:
+            - generic [ref=e280]:
+              - generic [ref=e281]: Your comment
+              - textbox "Share your thoughts about this game..." [ref=e282]
+              - generic [ref=e283]: 0 / 500
+            - button "Post Comment" [disabled] [ref=e284]
+      - complementary [ref=e291]:
+        - generic [ref=e293]:
+          - heading "🎮 Recommended Games" [level=3] [ref=e294]:
+            - generic [ref=e295]: 🎮
+            - text: Recommended Games
+          - paragraph [ref=e296]: More games
+  - alert [ref=e323]

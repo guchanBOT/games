@@ -857,31 +857,32 @@ function draw(){
     else if(it.ev.kind === 'coin') drawCoin(it.ev, it.d);
     else drawObs(it.ev, it.d);
   }
-  // 小人队伍：前尖后宽、不规则但贴紧的人群团（用黄金角铺满，不是整齐横排）
+  // 小人队伍：整团从屏幕底部往上铺，身体完整可见（单人高约屏高 6%）
   const show = Math.min(crowd, 80);
-  const figH = 54 * Math.min(1.3, H/760);
   const cColor = crowdColor();
-  // 终点登塔时小人逐级“站上台阶”抬升
-  let lift = 0;
+  const h0 = Math.max(24, Math.round(H * 0.062));             // 前排小人身高 ≈ 屏高 6%
+  let lift = 0;                                                // 终点登塔逐级抬升
   if(state === 'finish' && level.stairZ0 && pz > level.stairZ0){
     const k = Math.min(4, Math.floor((pz - level.stairZ0) / level.stairT));
-    if(k >= 0) lift = (k + 1) * 22;
+    if(k >= 0) lift = (k + 1) * h0 * 0.4;
   }
-  const rX = Math.min(0.28, 0.10 + 0.02 * Math.sqrt(show));   // 团宽：收拢，不横向摊开
-  const rZ = Math.min(20, 13 + 0.5 * Math.sqrt(show));        // 前后纵深：一点点
-  for(let i = show - 1; i >= 0; i--){                          // 后画前的：靠前的人盖住后面的
+  const baseY = H - 6;                                         // 最前那排的脚底（贴屏幕底但不被切）
+  const halfW = Math.min(W * 0.15, 150);                       // 团半宽 ≈ 路宽 1/3
+  const depth = Math.min(H * 0.15, h0 * 2.4);                  // 往后/往上堆多高
+  const cx = SX(px, 1);
+  for(let i = show - 1; i >= 0; i--){                          // 先画后排(上方)，前排最后画在最前
     const rr = Math.sqrt((i + 0.5) / show);                    // 中心→外圈铺满
-    const aa = i * 2.399963 + ((i * 7919) % 13) * 0.002;       // 黄金角+抖动，不规则
-    const wx = Math.max(-0.98, Math.min(0.98,
-      px + Math.cos(aa) * rr * rX + (((i*37) % 11) - 5) * 0.006));
-    const dz = -Math.abs(Math.sin(aa)) * rr * rZ - ((i*17) % 5) * 1.5;
-    const p = persp(dz), y = SY(dz) - lift, x = SX(wx, p);
-    drawFigure(x, y, figH * p, i * 0.9, cColor);
+    const aa = i * 2.399963 + ((i * 7919) % 13) * 0.002;       // 黄金角 + 抖动，乱一点像人群
+    const fx = Math.cos(aa), fd = Math.abs(Math.sin(aa));      // 横向 / 远近
+    const sc = 1 - 0.3 * (fd * rr);                            // 越往后越小
+    const x = Math.max(24, Math.min(W - 24, cx + fx * rr * halfW * sc + (i % 7 - 3) * 3));
+    const y = baseY - fd * rr * depth - lift;
+    drawFigure(x, y, h0 * sc, i * 0.9, cColor);
   }
-  // 人数牌
-  const bp = persp(0), bx = SX(px, bp), by = SY(0) - figH - 26 - lift;
+  // 人数牌（跟在小队上方）
+  const bx = cx, by = baseY - depth - lift - 18;
   ctx.fillStyle = 'rgba(255,255,255,.94)';
-  ctx.beginPath(); ctx.arc(bx, by, 24, 0, 7); ctx.fill();
+  ctx.beginPath(); ctx.arc(bx, by, Math.max(16, 22), 0, 7); ctx.fill();
   ctx.fillStyle = '#333'; ctx.font = '800 22px sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(crowd, bx, by + 1);

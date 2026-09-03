@@ -1,0 +1,403 @@
+[   36612ms] [WARNING] An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing. @ https://puzzio.io/source-game/count-masters-stickman-games:0
+[   36782ms] [LOG] [Puzzio.io] ⚡ Anti-Pub v2.0 : Nettoyage Interface & Pubs @ https://puzzio.io/injector.js:8
+[   36783ms] [LOG] [Puzzio.io] ✅ CSS Anti-Pub injecté @ https://puzzio.io/injector.js:60
+[   36783ms] [LOG] [Puzzio.io] ✅ Fake CrazyGames SDK installé @ https://puzzio.io/injector.js:186
+[   36783ms] [LOG] [Puzzio.io] ✅ Fake Google IMA SDK installé @ https://puzzio.io/injector.js:355
+[   36783ms] [LOG] [Puzzio.io] ✅ Nettoyeur actif démarré @ https://puzzio.io/injector.js:417
+[   36783ms] [LOG] [Puzzio.io] ✅ Proxy réseau actif @ https://puzzio.io/injector.js:549
+[   36783ms] [LOG] [Puzzio.io] 🎉 Anti-Pub v2.0 READY - NO ADS! @ https://puzzio.io/injector.js:550
+[   37302ms] [INFO] [Translations] initialized locale "en_US" @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[   37303ms] [LOG] [GameFrame] version 1.357.2 @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[   37800ms] [WARNING] Allow attribute will take precedence over 'allowfullscreen'. @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/static/js/7641.4177e1aafca5f04164ba.js:46
+[   39306ms] [LOG] navigator.mediaDevices support available @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45494ms] [LOG] [UnityMemory] Configuration Parameters - Can be set up in boot.config
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45494ms] [LOG]     "memorysetup-temp-allocator-size-nav-mesh-worker=65536"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45494ms] [LOG]     "memorysetup-allocator-temp-initial-block-size-main=262144"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45494ms] [LOG]     "memorysetup-allocator-temp-initial-block-size-worker=262144"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45494ms] [LOG]     "memorysetup-temp-allocator-size-audio-worker=65536"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45494ms] [LOG]     "memorysetup-temp-allocator-size-cloud-worker=32768"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45494ms] [LOG]     "memorysetup-temp-allocator-size-background-worker=32768"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45494ms] [LOG]     "memorysetup-bucket-allocator-granularity=16"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45494ms] [LOG]     "memorysetup-bucket-allocator-bucket-count=8"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45494ms] [LOG]     "memorysetup-bucket-allocator-block-size=4194304"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45495ms] [LOG]     "memorysetup-bucket-allocator-block-count=1"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45495ms] [LOG]     "memorysetup-main-allocator-block-size=16777216"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45495ms] [LOG]     "memorysetup-thread-allocator-block-size=16777216"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45495ms] [LOG]     "memorysetup-gfx-main-allocator-block-size=16777216"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45495ms] [LOG]     "memorysetup-gfx-thread-allocator-block-size=16777216"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45495ms] [LOG]     "memorysetup-cache-allocator-block-size=4194304"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45495ms] [LOG]     "memorysetup-typetree-allocator-block-size=2097152"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45495ms] [LOG]     "memorysetup-profiler-bucket-allocator-granularity=16"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45495ms] [LOG]     "memorysetup-profiler-bucket-allocator-bucket-count=8"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45495ms] [LOG]     "memorysetup-profiler-bucket-allocator-block-size=4194304"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45495ms] [LOG]     "memorysetup-profiler-bucket-allocator-block-count=1"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45495ms] [LOG]     "memorysetup-profiler-allocator-block-size=16777216"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45495ms] [LOG]     "memorysetup-profiler-editor-allocator-block-size=1048576"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45495ms] [LOG]     "memorysetup-temp-allocator-size-main=4194304"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45495ms] [LOG]     "memorysetup-job-temp-allocator-block-size=2097152"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45495ms] [LOG]     "memorysetup-job-temp-allocator-block-size-background=1048576"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45495ms] [LOG]     "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45580ms] [LOG] [Physics::Module] Initialized SinglethreadedJobDispatcher.
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45584ms] [LOG] Loading player data from data.unity3d
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45589ms] [LOG] Initialize engine version: 2022.3.30f1 (70558241b701)
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45590ms] [LOG] [Subsystems] Discovering subsystems at path UnitySubsystems
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45592ms] [LOG] Creating WebGL 2.0 context. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/bb0d9ecdb05db3e84da20bd14a4f84dc.loader.js:0
+[   45607ms] [LOG] Renderer: WebKit WebGL
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45607ms] [LOG] Vendor:   WebKit
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45607ms] [LOG] Version:  OpenGL ES 3.0 (WebGL 2.0 (OpenGL ES 3.0 Chromium))
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45608ms] [LOG] GLES:     3
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45608ms] [LOG]  EXT_clip_control EXT_color_buffer_float EXT_color_buffer_half_float EXT_conservative_depth EXT_depth_clamp EXT_float_blend EXT_polygon_offset_clamp EXT_texture_compression_bptc EXT_texture_compression_rgtc EXT_texture_filter_anisotropic EXT_texture_mirror_clamp_to_edge NV_shader_noperspective_interpolation OES_draw_buffers_indexed OES_sample_variables OES_shader_multisample_interpolation OES_texture_float_linear OVR_multiview2 WEBGL_clip_cull_distance WEBGL_compressed_texture_astc WEBGL_compressed_texture_etc WEBGL_compressed_texture_etc1 WEBGL_compressed_texture_s3tc WEBGL_compressed_texture_s3tc_srgb WEBGL_debug_renderer_info WEBGL_debug_shaders WEBGL_lose_context WEBGL_multi_draw WEBGL_polygon_mode WEBGL_stencil_texturing GL_EXT_clip_control GL_EXT_color_buffer_float GL_EXT_color_buffer_half_float GL_EXT_conservative_depth GL_EXT_depth_clamp GL_EXT_float_blend GL_EXT_polygon_offset_clamp GL_EXT_texture_compression_bptc GL_EXT_texture_compression_rgtc GL_EXT_texture_filter_anisotropic GL_EXT_texture_mirro
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45608ms] [LOG] r_clamp_to_edge GL_NV_shader_noperspective_interpolation GL_OES_draw_buffers_indexed GL_OES_sample_variables GL_OES_shader_multisample_interpolation GL_OES_texture_float_linear GL_OVR_multiview2 GL_WEBGL_clip_cull_distance GL_WEBGL_compressed_texture_astc GL_WEBGL_compressed_texture_etc GL_WEBGL_compressed_texture_etc1 GL_WEBGL_compressed_texture_s3tc GL_WEBGL_compressed_texture_s3tc_srgb GL_WEBGL_debug_renderer_info GL_WEBGL_debug_shaders GL_WEBGL_lose_context GL_WEBGL_multi_draw GL_WEBGL_polygon_mode GL_WEBGL_stencil_texturing
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45613ms] [LOG] OPENGL LOG: Creating OpenGL ES 3.0 graphics device ; Context level  <OpenGL ES 3.0> ; Context handle 1
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45694ms] [LOG] ERROR: Shader  @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45695ms] [LOG] Hidden/Universal/HDRDebugView shader is not supported on this GPU (none of subshaders/fallbacks are suitable)
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45705ms] [LOG] Input Manager initialize...
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45780ms] [LOG] [Physics::Module] Initialized SinglethreadedJobDispatcher.
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45780ms] [LOG] UnloadTime: 3.400001 ms
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45801ms] [LOG] [CrazySDK] SiteLock v1.9.0
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45812ms] [LOG] Odin Serializer ArchitectureInfo initialization with defaults (all unaligned read/writes disabled).
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   45813ms] [LOG] Odin Serializer detected whitelisted runtime platform WebGLPlayer and memory read test succeeded; enabling all unaligned memory read/writes.
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   46015ms] [WARNING] [.WebGL-0x21d40ff6ac00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ https://count-masters-stickman-games.game-files.crazygames.com/unity/unity2020/count-masters-stickman-games.html:0
+[   46027ms] [WARNING] [.WebGL-0x21d40ff6ac00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ https://count-masters-stickman-games.game-files.crazygames.com/unity/unity2020/count-masters-stickman-games.html:0
+[   46034ms] [WARNING] [.WebGL-0x21d40ff6ac00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels @ https://count-masters-stickman-games.game-files.crazygames.com/unity/unity2020/count-masters-stickman-games.html:0
+[   46047ms] [WARNING] [.WebGL-0x21d40ff6ac00]GL Driver Message (OpenGL, Performance, GL_CLOSE_PATH_NV, High): GPU stall due to ReadPixels (this message will no longer repeat) @ https://count-masters-stickman-games.game-files.crazygames.com/unity/unity2020/count-masters-stickman-games.html:0
+[   46097ms] [LOG] [UnityCache] 'https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/fc3d0e2f3ede6b21d68d1bdcf09897f0.data.br' successfully downloaded and stored in the indexedDB cache @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/bb0d9ecdb05db3e84da20bd14a4f84dc.loader.js:0
+[   46587ms] [LOG] [Puzzio.io] 🚫 FETCH BLOCKED https://securepubads.g.doubleclick.net/tag/js/gpt.js @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[   46947ms] [ERROR] Bidder config for appnexus not found. Disabling for this session. @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[   47020ms] [LOG] IMA SDK Blocked by Puzzio @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[   47572ms] [LOG] [Puzzio.io] 🚫 FETCH BLOCKED https://securepubads.g.doubleclick.net/pagead/ppub_config?ippd=puzzio.io @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[   51219ms] [ERROR] %cHTML5 SDK background-color: #6842FF; border-radius: 3px; padding: 0px 4px; color: white; Gf user response timeout 5000ms, continuing with "null" (signed out) user @ https://count-masters-stickman-games.game-files.crazygames.com/unity/unity2020/count-masters-stickman-games.html:0
+[   51220ms] [LOG] %cHTML5 SDK background-color: #6842FF; border-radius: 3px; padding: 0px 4px; color: white; CrazyGames HTML SDK initialized {version: 3.8.0, environment: crazygames, initOptions: Object} @ https://sdk.crazygames.com/crazygames-sdk-v3.js:0
+[   51476ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51476ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51476ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51477ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51477ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51477ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51477ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51478ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51478ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51479ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51479ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51479ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51480ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51480ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51481ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51481ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51481ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51482ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51493ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51494ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51494ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51494ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51495ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51495ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51495ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51496ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51496ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51496ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51496ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51497ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51497ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51497ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51498ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51498ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51498ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51499ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51499ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51499ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51499ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51500ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51501ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51502ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51502ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51503ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51503ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51504ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51504ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51505ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51505ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51505ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51506ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51506ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51507ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51508ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51508ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51509ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51509ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51510ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51511ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51512ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51512ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51512ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51513ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51513ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51514ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51515ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51515ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51516ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51516ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51517ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51517ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51517ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51518ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51519ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51520ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51521ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51521ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51522ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51523ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51524ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51525ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51525ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51526ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51527ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51527ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51527ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51527ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51528ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51529ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51529ms] [LOG] Trying to get length of sound which is not loaded. @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51845ms] [LOG] [Physics::Module] Initialized SinglethreadedJobDispatcher.
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   51846ms] [LOG] UnloadTime: 2.300001 ms
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   52476ms] [LOG] Unloading 6 Unused Serialized files (Serialized files now loaded: 0)
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   52565ms] [LOG] Unloading 13 unused Assets to reduce memory usage. Loaded Objects now: 40679.
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   52566ms] [LOG] Total: 58.799999 ms (FindLiveObjects: 3.500000 ms CreateObjectMapping: 3.199999 ms MarkObjects: 51.500000 ms  DeleteObjects: 0.600000 ms)
+
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   52937ms] [LOG] update config: m_gates_off
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   52937ms] [LOG] update config: upgrade_4
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[   52937ms] [LOG] update config: lvl_8_per_6
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[  248127ms] [LOG] [Physics::Module] Initialized SinglethreadedJobDispatcher.
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[  248127ms] [LOG] UnloadTime: 15.199999 ms
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[  248140ms] [LOG] Unloading 5 Unused Serialized files (Serialized files now loaded: 0)
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[  248166ms] [LOG] Unloading 437 unused Assets to reduce memory usage. Loaded Objects now: 35699.
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[  248167ms] [LOG] Total: 26.199999 ms (FindLiveObjects: 1.699999 ms CreateObjectMapping: 1.200001 ms MarkObjects: 21.699999 ms  DeleteObjects: 1.600000 ms)
+
+ @ https://puzzio.io/proxy/files.crazygames.com/count-masters-stickman-games/14/Build/61c3111a617f5704892207f850018243.framework.js.br:4300
+[  263757ms] [LOG] [Puzzio.io] 🔄 REWRITE http://147.93.7.103:9999/proxy/lexicon.33across.com/v1/envelope?pid=001Pg0000087XvoIAE&gdpr=0&src=pbjs&ver=11.8.0&coppa=0 @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  263757ms] [LOG] [Puzzio.io] 🔄 FETCH REWRITTEN https://lexicon.33across.com/v1/envelope?pid=001Pg0000087XvoIAE&gdpr=0&src=pbjs&ver=11.8.0&coppa=0 -> http://147.93.7.103:9999/proxy/lexicon.33across.com/v1/envelope?pid=001Pg0000087XvoIAE&gdpr=0&src=pbjs&ver=11.8.0&coppa=0 @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  263757ms] [ERROR] Mixed Content: The page at 'https://puzzio.io/game/count-masters-stickman-games' was loaded over HTTPS, but requested an insecure resource 'http://147.93.7.103:9999/proxy/lexicon.33across.com/v1/envelope?pid=001Pg0000087XvoIAE&gdpr=0&src=pbjs&ver=11.8.0&coppa=0'. This request has been blocked; the content must be served over HTTPS. @ https://puzzio.io/injector.js:236
+[  263758ms] [LOG] [Puzzio.io] 🔄 REWRITE http://147.93.7.103:9999/proxy/gum.criteo.com/sid/json?origin=prebid&topUrl=https%3A%2F%2Fwww.crazygames.com%2F&domain=puzzio.io&cw=1&lsw=1 @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  263758ms] [LOG] [Puzzio.io] 🔄 FETCH REWRITTEN https://gum.criteo.com/sid/json?origin=prebid&topUrl=https%3A%2F%2Fwww.crazygames.com%2F&domain=puzzio.io&cw=1&lsw=1 -> http://147.93.7.103:9999/proxy/gum.criteo.com/sid/json?origin=prebid&topUrl=https%3A%2F%2Fwww.crazygames.com%2F&domain=puzzio.io&cw=1&lsw=1 @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  263758ms] [LOG] [Puzzio.io] 🚫 Fetch bloqué: http://147.93.7.103:9999/proxy/gum.criteo.com/sid/json?origin=prebid&topUrl=https%3A%2F%2Fwww.crazygames.com%2F&domain=puzzio.io&cw=1&lsw=1 @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  263759ms] [LOG] [Puzzio.io] 🔄 REWRITE http://147.93.7.103:9999/proxy/id.hadron.ad.gt/api/v1/pbhid?partner_id=631&_it=prebid&t=1&src=id&domain=puzzio.io @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  263759ms] [LOG] [Puzzio.io] 🔄 FETCH REWRITTEN https://id.hadron.ad.gt/api/v1/pbhid?partner_id=631&_it=prebid&t=1&src=id&domain=puzzio.io -> http://147.93.7.103:9999/proxy/id.hadron.ad.gt/api/v1/pbhid?partner_id=631&_it=prebid&t=1&src=id&domain=puzzio.io @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  263759ms] [LOG] [Puzzio.io] 🚫 Fetch bloqué: http://147.93.7.103:9999/proxy/id.hadron.ad.gt/api/v1/pbhid?partner_id=631&_it=prebid&t=1&src=id&domain=puzzio.io @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  263760ms] [LOG] [Puzzio.io] 🔄 REWRITE http://147.93.7.103:9999/proxy/id5-sync.com/api/config/prebid @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  263760ms] [LOG] [Puzzio.io] 🔄 FETCH REWRITTEN https://id5-sync.com/api/config/prebid -> http://147.93.7.103:9999/proxy/id5-sync.com/api/config/prebid @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  263760ms] [ERROR] Mixed Content: The page at 'https://puzzio.io/game/count-masters-stickman-games' was loaded over HTTPS, but requested an insecure resource 'http://147.93.7.103:9999/proxy/id5-sync.com/api/config/prebid'. This request has been blocked; the content must be served over HTTPS. @ https://puzzio.io/injector.js:236
+[  263762ms] [LOG] [Puzzio.io] 🔄 REWRITE http://147.93.7.103:9999/proxy/idx.liadm.com/idex/prebid/84896?duid=4a416a47fe46--01m1je39kyvtd0wpm3ysv05zqb&cd=.puzzio.io&pu=https%3A%2F%2Fpuzzio.io&resolve=nonId&resolve=uid2&resolve=pubmatic&resolve=magnite&resolve=index&resolve=sharethrough&resolve=thetradedesk&resolve=triplelift&resolve=medianet @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  263762ms] [LOG] [Puzzio.io] 🔄 FETCH REWRITTEN https://idx.liadm.com/idex/prebid/84896?duid=4a416a47fe46--01m1je39kyvtd0wpm3ysv05zqb&cd=.puzzio.io&pu=https%3A%2F%2Fpuzzio.io&resolve=nonId&resolve=uid2&resolve=pubmatic&resolve=magnite&resolve=index&resolve=sharethrough&resolve=thetradedesk&resolve=triplelift&resolve=medianet -> http://147.93.7.103:9999/proxy/idx.liadm.com/idex/prebid/84896?duid=4a416a47fe46--01m1je39kyvtd0wpm3ysv05zqb&cd=.puzzio.io&pu=https%3A%2F%2Fpuzzio.io&resolve=nonId&resolve=uid2&resolve=pubmatic&resolve=magnite&resolve=index&resolve=sharethrough&resolve=thetradedesk&resolve=triplelift&resolve=medianet @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  263763ms] [LOG] [Puzzio.io] 🚫 Fetch bloqué: http://147.93.7.103:9999/proxy/idx.liadm.com/idex/prebid/84896?duid=4a416a47fe46--01m1je39kyvtd0wpm3ysv05zqb&cd=.puzzio.io&pu=https%3A%2F%2Fpuzzio.io&resolve=nonId&resolve=uid2&resolve=pubmatic&resolve=magnite&resolve=index&resolve=sharethrough&resolve=thetradedesk&resolve=triplelift&resolve=medianet @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  263763ms] [LOG] [Puzzio.io] 🔄 REWRITE http://147.93.7.103:9999/proxy/id.crwdcntrl.net/id?c=18200 @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  263763ms] [LOG] [Puzzio.io] 🔄 FETCH REWRITTEN https://id.crwdcntrl.net/id?c=18200 -> http://147.93.7.103:9999/proxy/id.crwdcntrl.net/id?c=18200 @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  263763ms] [ERROR] Mixed Content: The page at 'https://puzzio.io/game/count-masters-stickman-games' was loaded over HTTPS, but requested an insecure resource 'http://147.93.7.103:9999/proxy/id.crwdcntrl.net/id?c=18200'. This request has been blocked; the content must be served over HTTPS. @ https://puzzio.io/injector.js:236
+[  263768ms] [ERROR] [Puzzio.io] ❌ FETCH ERROR https://lexicon.33across.com/v1/envelope?pid=001Pg0000087XvoIAE&gdpr=0&src=pbjs&ver=11.8.0&coppa=0 TypeError: Failed to fetch
+    at window.fetch (https://puzzio.io/injector.js:237:26)
+    at window.fetch (https://puzzio.io/injector.js:502:22)
+    at https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:129:324531
+    at o (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:4224:27)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:4292:17
+    at Object.callback (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:11457:33)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:21808:19
+    at Array.forEach (<anonymous>)
+    at z (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:21805:15)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:22357:62
+    at new Promise (<anonymous>)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:22357:46
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:22339:52 @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  263768ms] [ERROR] [Puzzio.io] ❌ FETCH ERROR https://id5-sync.com/api/config/prebid TypeError: Failed to fetch
+    at window.fetch (https://puzzio.io/injector.js:237:26)
+    at window.fetch (https://puzzio.io/injector.js:502:22)
+    at https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:129:324531
+    at o (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:4224:27)
+    at #e (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:13937:36)
+    at I.execute (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:13890:32)
+    at Object.callback (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:13847:24)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:21808:19
+    at Array.forEach (<anonymous>)
+    at z (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:21805:15)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:22357:62
+    at new Promise (<anonymous>)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:22357:46
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:22339:52 @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  263769ms] [ERROR] [Puzzio.io] ❌ FETCH ERROR https://id.crwdcntrl.net/id?c=18200 TypeError: Failed to fetch
+    at window.fetch (https://puzzio.io/injector.js:237:26)
+    at window.fetch (https://puzzio.io/injector.js:502:22)
+    at https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:129:324531
+    at o (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:4224:27)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:4292:17
+    at Object.callback (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:16822:28)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:21808:19
+    at Array.forEach (<anonymous>)
+    at z (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:21805:15)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:22357:62
+    at new Promise (<anonymous>)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:22357:46
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:22339:52 @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  264142ms] [LOG] [Puzzio.io] 🔄 REWRITE http://147.93.7.103:9999/proxy/geo.privacymanager.io/ @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  264142ms] [LOG] [Puzzio.io] 🔄 FETCH REWRITTEN https://geo.privacymanager.io/ -> http://147.93.7.103:9999/proxy/geo.privacymanager.io/ @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  264142ms] [ERROR] Mixed Content: The page at 'https://puzzio.io/game/count-masters-stickman-games' was loaded over HTTPS, but requested an insecure resource 'http://147.93.7.103:9999/proxy/geo.privacymanager.io/'. This request has been blocked; the content must be served over HTTPS. @ https://puzzio.io/injector.js:236
+[  264144ms] [ERROR] [Puzzio.io] ❌ FETCH ERROR https://geo.privacymanager.io/ TypeError: Failed to fetch
+    at window.fetch (https://puzzio.io/injector.js:237:26)
+    at window.fetch (https://puzzio.io/injector.js:502:22)
+    at https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:129:324531
+    at V (https://ats-wrapper.privacymanager.io/ats-modules/f335ec38-f1f6-423b-8091-fe87576411ae/ats.js:1:97175)
+    at Object.getGeoLocation (https://ats-wrapper.privacymanager.io/ats-modules/f335ec38-f1f6-423b-8091-fe87576411ae/ats.js:1:108935)
+    at Le (https://ats-wrapper.privacymanager.io/ats-modules/f335ec38-f1f6-423b-8091-fe87576411ae/ats.js:1:108449)
+    at Gt (https://ats-wrapper.privacymanager.io/ats-modules/f335ec38-f1f6-423b-8091-fe87576411ae/ats.js:1:125996)
+    at xt (https://ats-wrapper.privacymanager.io/ats-modules/f335ec38-f1f6-423b-8091-fe87576411ae/ats.js:1:125222)
+    at Module.Ft (https://ats-wrapper.privacymanager.io/ats-modules/f335ec38-f1f6-423b-8091-fe87576411ae/ats.js:1:126861)
+    at https://ats-wrapper.privacymanager.io/ats-modules/f335ec38-f1f6-423b-8091-fe87576411ae/ats.js:1:128147 @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  264145ms] Uncaught (in promise) TypeError: Cannot read properties of undefined (reading 'country')
+    at Le (https://ats-wrapper.privacymanager.io/ats-modules/f335ec38-f1f6-423b-8091-fe87576411ae/ats.js:0:108467)
+[  264253ms] [ERROR] Access to fetch at 'https://api.rlcdn.com/api/identity/envelope?pid=13431' from origin 'https://puzzio.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ https://puzzio.io/source-game/count-masters-stickman-games:0
+[  264253ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://api.rlcdn.com/api/identity/envelope?pid=13431:0
+[  264254ms] [ERROR] [Puzzio.io] ❌ FETCH ERROR https://api.rlcdn.com/api/identity/envelope?pid=13431 TypeError: Failed to fetch
+    at window.fetch (https://puzzio.io/injector.js:237:26)
+    at window.fetch (https://puzzio.io/injector.js:502:22)
+    at https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:129:324531
+    at o (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:4224:27)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:4292:17
+    at v (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:14143:26)
+    at Object.y (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:14111:27)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:21808:19
+    at Array.forEach (<anonymous>)
+    at z (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:21805:15)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:22357:62
+    at new Promise (<anonymous>)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:22357:46
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:22339:52 @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  264731ms] [ERROR] Access to fetch at 'https://rp.liadm.com/j?dtstmp=1788398904961&se=eyJlbWFpbEhhc2giOiIifQ&duid=4a416a47fe46--01m1je39kyvtd0wpm3ysv05zqb&tv=11.8.0&pu=https%3A%2F%2Fpuzzio.io%2Fgame%2Fcount-masters-stickman-games&wpn=prebid&cd=.puzzio.io' from origin 'https://puzzio.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ https://puzzio.io/source-game/count-masters-stickman-games:0
+[  264732ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://rp.liadm.com/j?dtstmp=1788398904961&se=eyJlbWFpbEhhc2giOiIifQ&duid=4a416a47fe46--01m1je39kyvtd0wpm3ysv05zqb&tv=11.8.0&pu=https%3A%2F%2Fpuzzio.io%2Fgame%2Fcount-masters-stickman-games&wpn=prebid&cd=.puzzio.io:0
+[  264732ms] [ERROR] [Puzzio.io] ❌ FETCH ERROR https://rp.liadm.com/j?dtstmp=1788398904961&se=eyJlbWFpbEhhc2giOiIifQ&duid=4a416a47fe46--01m1je39kyvtd0wpm3ysv05zqb&tv=11.8.0&pu=https%3A%2F%2Fpuzzio.io%2Fgame%2Fcount-masters-stickman-games&wpn=prebid&cd=.puzzio.io TypeError: Failed to fetch
+    at window.fetch (https://puzzio.io/injector.js:237:26)
+    at window.fetch (https://puzzio.io/injector.js:502:22)
+    at https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:129:324531
+    at o (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:4224:27)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:4292:17
+    at Object.ajaxGet (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:9930:29)
+    at Object.ajaxGet (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:16253:32)
+    at ft.ajaxGet (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:16442:30)
+    at n (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:15445:32)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:15457:19
+    at M.sendState (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:15435:17)
+    at M.sendAjax (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:15439:20)
+    at mt (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:16470:19)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:16523:67
+    at Array.forEach (<anonymous>)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:16521:25
+    at Object.g [as push] (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:16528:21)
+    at z (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:9990:36)
+    at Object.getId (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:10024:25)
+    at pe (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:22016:33)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:22064:26
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:6837:26
+    at Object.measureTime (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:6912:45)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:22062:41
+    at Array.reduce (<anonymous>)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:22060:29
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:6837:26
+    at Object.measureTime (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:6912:45)
+    at Ie (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:22045:16)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:22350:25
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:22339:52 @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  265078ms] [ERROR] Access to fetch at 'https://rp.liadm.com/j?dtstmp=1788398904961&se=eyJlbWFpbEhhc2giOiIifQ&duid=4a416a47fe46--01m1je39kyvtd0wpm3ysv05zqb&tv=11.8.0&pu=https%3A%2F%2Fpuzzio.io%2Fgame%2Fcount-masters-stickman-games&wpn=prebid&cd=.puzzio.io' from origin 'https://puzzio.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ https://puzzio.io/source-game/count-masters-stickman-games:0
+[  265078ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://rp.liadm.com/j?dtstmp=1788398904961&se=eyJlbWFpbEhhc2giOiIifQ&duid=4a416a47fe46--01m1je39kyvtd0wpm3ysv05zqb&tv=11.8.0&pu=https%3A%2F%2Fpuzzio.io%2Fgame%2Fcount-masters-stickman-games&wpn=prebid&cd=.puzzio.io:0
+[  265079ms] [ERROR] [Puzzio.io] ❌ FETCH ERROR https://rp.liadm.com/j?dtstmp=1788398904961&se=eyJlbWFpbEhhc2giOiIifQ&duid=4a416a47fe46--01m1je39kyvtd0wpm3ysv05zqb&tv=11.8.0&pu=https%3A%2F%2Fpuzzio.io%2Fgame%2Fcount-masters-stickman-games&wpn=prebid&cd=.puzzio.io TypeError: Failed to fetch
+    at window.fetch (https://puzzio.io/injector.js:237:26)
+    at window.fetch (https://puzzio.io/injector.js:502:22)
+    at https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:129:324531
+    at o (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:4224:27)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:4292:17
+    at Object.ajaxGet (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:9930:29)
+    at Object.ajaxGet (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:16253:32)
+    at ft.ajaxGet (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:16442:30)
+    at n (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:15445:32)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:15451:101
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:4289:26 @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  265426ms] [ERROR] Access to fetch at 'https://rp.liadm.com/j?dtstmp=1788398904961&se=eyJlbWFpbEhhc2giOiIifQ&duid=4a416a47fe46--01m1je39kyvtd0wpm3ysv05zqb&tv=11.8.0&pu=https%3A%2F%2Fpuzzio.io%2Fgame%2Fcount-masters-stickman-games&wpn=prebid&cd=.puzzio.io' from origin 'https://puzzio.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ https://puzzio.io/source-game/count-masters-stickman-games:0
+[  265426ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://rp.liadm.com/j?dtstmp=1788398904961&se=eyJlbWFpbEhhc2giOiIifQ&duid=4a416a47fe46--01m1je39kyvtd0wpm3ysv05zqb&tv=11.8.0&pu=https%3A%2F%2Fpuzzio.io%2Fgame%2Fcount-masters-stickman-games&wpn=prebid&cd=.puzzio.io:0
+[  265426ms] [ERROR] [Puzzio.io] ❌ FETCH ERROR https://rp.liadm.com/j?dtstmp=1788398904961&se=eyJlbWFpbEhhc2giOiIifQ&duid=4a416a47fe46--01m1je39kyvtd0wpm3ysv05zqb&tv=11.8.0&pu=https%3A%2F%2Fpuzzio.io%2Fgame%2Fcount-masters-stickman-games&wpn=prebid&cd=.puzzio.io TypeError: Failed to fetch
+    at window.fetch (https://puzzio.io/injector.js:237:26)
+    at window.fetch (https://puzzio.io/injector.js:502:22)
+    at https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:129:324531
+    at o (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:4224:27)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:4292:17
+    at Object.ajaxGet (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:9930:29)
+    at Object.ajaxGet (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:16253:32)
+    at ft.ajaxGet (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:16442:30)
+    at n (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:15445:32)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:15451:101
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:4289:26 @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
+[  265775ms] [ERROR] Access to fetch at 'https://rp.liadm.com/j?dtstmp=1788398904961&se=eyJlbWFpbEhhc2giOiIifQ&duid=4a416a47fe46--01m1je39kyvtd0wpm3ysv05zqb&tv=11.8.0&pu=https%3A%2F%2Fpuzzio.io%2Fgame%2Fcount-masters-stickman-games&wpn=prebid&cd=.puzzio.io' from origin 'https://puzzio.io' has been blocked by CORS policy: No 'Access-Control-Allow-Origin' header is present on the requested resource. @ https://puzzio.io/source-game/count-masters-stickman-games:0
+[  265776ms] [ERROR] Failed to load resource: net::ERR_FAILED @ https://rp.liadm.com/j?dtstmp=1788398904961&se=eyJlbWFpbEhhc2giOiIifQ&duid=4a416a47fe46--01m1je39kyvtd0wpm3ysv05zqb&tv=11.8.0&pu=https%3A%2F%2Fpuzzio.io%2Fgame%2Fcount-masters-stickman-games&wpn=prebid&cd=.puzzio.io:0
+[  265776ms] [ERROR] [Puzzio.io] ❌ FETCH ERROR https://rp.liadm.com/j?dtstmp=1788398904961&se=eyJlbWFpbEhhc2giOiIifQ&duid=4a416a47fe46--01m1je39kyvtd0wpm3ysv05zqb&tv=11.8.0&pu=https%3A%2F%2Fpuzzio.io%2Fgame%2Fcount-masters-stickman-games&wpn=prebid&cd=.puzzio.io TypeError: Failed to fetch
+    at window.fetch (https://puzzio.io/injector.js:237:26)
+    at window.fetch (https://puzzio.io/injector.js:502:22)
+    at https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:129:324531
+    at o (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:4224:27)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:4292:17
+    at Object.ajaxGet (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:9930:29)
+    at Object.ajaxGet (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:16253:32)
+    at ft.ajaxGet (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:16442:30)
+    at n (https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:15445:32)
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:15451:101
+    at https://fafvertizing.crazygames.com/v12.25/rafvertizing-prebid-gpp-consent.js:4289:26 @ https://puzzio.io/proxy/builds.crazygames.com/gameframe/v1/bundle.js?puzzio-proxy-patch=20260611:128
