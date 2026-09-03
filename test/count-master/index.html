@@ -52,6 +52,7 @@
   <div id="menuCoins" style="font-size:28px;font-weight:900"></div>
   <button id="btnStart">开 始</button>
   <button id="btnTour" class="ghost small" style="display:none"></button>
+  <button id="btnBig" class="ghost small" style="display:none"></button>
   <button id="btnUp" class="ghost small"></button>
   <button id="btnUndo" class="ghost small" style="display:none"></button>
   <button id="btnCoin" class="ghost small"></button>
@@ -341,6 +342,7 @@ function buildTour(){
   return {n:0, tour:true, start, events, finishZ, length: stairZ0 + 220,
           theme, decos, speed:1.0, par:500, bonus:false, stairs,
           stairZ0, stairT:26, bossZ,
+          tourBoss: localStorage.getItem('np_boss9999') ? 9999 : 0,  // 测试开关：0=正常，9999=看失败
           boss: Math.max(2, Math.floor(start*0.5)), bossMax: 2500,
           bossColor: '#8e24aa', bossBig: 2.4};
 }
@@ -615,6 +617,11 @@ function showMenu(){
   level = genLevel(curLevel, store.upLvl());
   $('btnTour').style.display = TEST_BUILD ? '' : 'none';
   $('btnTour').textContent = '🎪 体验关（一条路看完全部玩法）';
+  const bigOn = !!localStorage.getItem('np_boss9999');        // 测试小开关：体验关王=9999，专门看失败动画
+  $('btnBig').style.display = TEST_BUILD ? '' : 'none';
+  $('btnBig').textContent = bigOn
+    ? '👑 王=9999 已开（点我关掉，恢复能打赢）'
+    : '👑 体验关王调到 9999（专门看失败动画）';
   $('menuTitle').textContent = (level.bonus ? '👑 Boss 关 · ' : '') + '第 ' + curLevel + ' 关';
   $('btnPrevLv').disabled = curLevel <= 1;
   $('btnNextLv').disabled = curLevel >= store.unlocked;
@@ -714,6 +721,11 @@ function finishTour(fail){                        // 体验关的专属结算：
 }
 $('btnStart').onclick = startLevel;
 $('btnTour').onclick = startTour;
+$('btnBig').onclick = ()=>{
+  const on = !!localStorage.getItem('np_boss9999');
+  on ? localStorage.removeItem('np_boss9999') : localStorage.setItem('np_boss9999', '1');
+  sndGood(); showMenu();
+};
 $('btnRetry').onclick = ()=>{ tour ? startTour() : startLevel(); };
 $('btnNext').onclick = ()=>{ if(tour){ showMenu(); } else { curLevel = Math.min(store.unlocked, curLevel + 1); showMenu(); } };
 
@@ -812,7 +824,8 @@ function update(dt){
       }
     }else{
       if(level.fstep === undefined){            // 开场一次性定死步长 → 固定 ~1.8 秒线性打完
-        if(level.tour) level.boss = Math.max(1, Math.floor(crowd * 0.5)); // 体验关：王=当时一半，保证能赢
+        if(level.tour) level.boss = level.tourBoss > 0 ? level.tourBoss
+                                 : Math.max(1, Math.floor(crowd * 0.5));   // 体验关默认王=一半能赢；开9999看失败动画
         level.fstep = Math.max(1, Math.ceil(Math.min(crowd, level.boss) / 36));
         addFloat('和守门王打起来啦！', true); sndGood();
       }
