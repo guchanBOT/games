@@ -454,11 +454,13 @@ function endLevel(fail){
   state = 'over';
   let stars, title, info;
   if(fail){
-    stars = 0; title = '哎呀，小人都没有啦'; info = '别灰心，再试一次！';
-  }else if(bossResult === 'lose'){               // 守门王没撞过：给 1 星、仍算过关，重试攒人
-    stars = 1;
-    title = '守门王拦住了你！';
-    info = '下次攒更多人再来（还差 ' + Math.max(0, level.bossMax - crowd) + ' 人）';
+    stars = 0;
+    if(bossResult === 'lose'){                   // 守门王没撞过 = 卡关：这关不算过，重试攒人
+      title = '守门王拦住了你！';
+      info = '还差 ' + Math.max(0, level.bossMax - crowd) + ' 人 · 攒够了再来！';
+    }else{
+      title = '哎呀，小人都没有啦'; info = '别灰心，再试一次！';
+    }
   }else{                                         // 撞倒守门王 → 爬上 ×台阶 结算
     let stair = 0;
     for(const s of level.stairs) if(crowd >= s.need) stair = s.mult;
@@ -564,9 +566,9 @@ function update(dt){
     finT += dt;
     px += (0 - px) * Math.min(1, dt*6); targetX = 0;
     if(pz < level.bossZ){ pz += 150 * level.speed * dt; }
-    else if(crowd < level.boss){                // 人数不够：被守门王拦下（1 星过关，可重试攒人）
+    else if(crowd < level.boss){                // 人数不够：被守门王拦下 = 卡关，重试攒人
       if(!bossResult){ bossResult = 'lose'; sndBad(); addFloat('还差 ' + (level.boss - crowd) + ' 人…', false); }
-      if(finT > 1.2) endLevel(false);
+      if(finT > 1.2) endLevel(true);
     }else{                                      // 撞赢：守门王倒下（小人一个不少），去登塔
       if(!bossResult){
         bossResult = 'win'; sndGood(); store.addCoins(5);
