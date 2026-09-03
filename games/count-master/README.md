@@ -9,3 +9,4 @@
   - 想换角色 / 改图：在 `final/` 出好压缩图 → 重新压成 base64 嵌回 `index.html`。素材源不会传上云。
 - 孩子的进度存在设备 localStorage：以 `cm_` 开头（金币、装扮、关卡收藏等）。
 - 一次性归零键：`__wipe_cm = '1'`（想再清一次，改个新值再部署）。
+- **只重置当天 30 分钟限时**（不动进度）：改 `index.html` 里 `TIME_SALT` 的值（`'r1'`→`'r2'`→…），然后 `bash bump-version.sh count-master patch` + `bash deploy.sh`。孩子设备下次打开（有网）即重新计 30 分钟。计时键形如 `cm_time_<salt>_<日期>`，与进度键互不干扰。

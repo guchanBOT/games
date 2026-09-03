@@ -93,7 +93,7 @@
 <script>
 'use strict';
 /* 游戏版本号：bump-version.sh 会同步改 sw.js 和 manifest.json */
-const GAME_VER = '1.0.1';
+const GAME_VER = '1.0.2';
 /* ================= 基础 ================= */
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 let W = 0, H = 0;
@@ -247,7 +247,12 @@ function genLevel(n, up){
   }
 
   for(let i=0; i<d.pairs; i++){
-    const pair = makePair();
+    let pair = makePair();
+    // 开头三道门不许“两边都减人”：开局只有十来个，连吃减分门必死。
+    // 只有触发时才重抽（才多耗随机数），开头没问题的关卡布局和以前完全一样。
+    for(let t=0; t<20 && i<3 && pair.every(isBad); t++) pair = makePair();
+    if(i < 3 && pair.every(isBad))           // 兜底（几乎到不了）：给小大两个加法
+      pair = [{t:'add', v: ri(8, d.maxAdd)}, {t:'add', v: ri(5, Math.max(6, Math.floor(d.maxAdd*0.6)))}];
     events.push({kind:'gate', z, pair, done:false});
     // 预期人数按“选得好”估算（?门按 +20、不变按原样估），上限 999
     const est = op => op.t==='rnd' ? e + 20 : applyOp(e, op);
