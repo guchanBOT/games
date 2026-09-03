@@ -59,6 +59,11 @@
     <div id="palette" style="display:flex;gap:10px;justify-content:center;align-items:center"></div>
     <div id="palHint" style="font-size:12px;color:#a89a8c;margin-top:6px"></div>
   </div>
+  <div style="margin-top:10px;text-align:center">
+    <div style="font-size:14px;font-weight:700;color:#776e65;margin-bottom:6px">头上戴的</div>
+    <div id="hatPal" style="display:flex;gap:10px;justify-content:center;align-items:center"></div>
+    <div id="hatHint" style="font-size:12px;color:#a89a8c;margin-top:6px"></div>
+  </div>
   <button id="btnReset" class="ghost small" style="opacity:.55;margin-top:8px">🗑 清空进度</button>
 </div>
 
@@ -122,6 +127,9 @@ function diffOf(n){
     mul    : n >= 5,                          // ×2 出现
     mul3   : n >= 8,                          // ×3 出现
     div    : n >= 10,                         // ÷2 出现（对齐原版：除法基本只有 ÷2）
+    gate3  : n >= 16 ? (n >= 22 ? 0.55 : 0.3) : 0,   // 一部分门变“三选一”
+    super  : n >= 18,                         // 少量超大门 ×4
+    fork   : n >= 18,                         // 陷阱可能升级成“岔路”：多一个不变选项
     trap   : n >= 12 ? 0.2 : 0,               // “两边都亏”陷阱对概率
     rnd    : n >= 8 ? 0.15 : 0,               // “?”惊喜门概率
     mv     : n >= 10,                         // 障碍会左右移动
@@ -139,6 +147,7 @@ function applyOp(n, op){
     if(r < 0.8)  return Math.max(1, Math.floor(n / 2));
     return Math.max(1, n - (5 + Math.floor(Math.random()*10)));
   }
+  if(op.t==='pass') return n;             // 岔路口的“直行”门：人不变
   if(op.t==='add') return n + op.v;
   if(op.t==='sub') return n - op.v;
   if(op.t==='mul') return n * op.v;
@@ -146,6 +155,7 @@ function applyOp(n, op){
 }
 function opLabel(op){
   return op.t==='rnd' ? '?' :
+         op.t==='pass' ? '不变' :
          op.t==='add' ? '+'+op.v : op.t==='sub' ? '−'+op.v :
          op.t==='mul' ? '×'+op.v : '÷'+op.v;
 }
@@ -162,6 +172,7 @@ function genLevel(n, up){
   let obsLeft = d.obs;
 
   function randOp(positiveOnly){
+    if(d.super && !positiveOnly && R() < 0.1) return {t:'mul', v:4};   // 超大门 ×4
     const pool = ['add'];
     if(!positiveOnly){
       if(d.sub && e >= 3) pool.push('sub');
@@ -178,27 +189,37 @@ function genLevel(n, up){
   }
 
   function makePair(){
-    const bothGood = d.bonus || R() < 0.18;
-    const wantTrap = !d.bonus && d.trap > 0 && R() < d.trap && e >= 6;
+    // 陷阱 / 岔路：两边都亏，岔路口会多给一扇“不变”，让孩子能绕过去
+    if(!d.bonus && d.trap > 0 && e >= 6 && R() < d.trap){
+      const a = {t:'sub', v: ri(2, Math.max(3, Math.floor(e*0.4)))};
+      const b = (d.div && e%2===0 && R()<0.5) ? {t:'div', v:2}
+          : {t:'sub', v: ri(Math.floor(e*0.5), Math.max(Math.floor(e*0.5)+1, e-1))};
+      if(d.fork && R() < 0.55) return R() < 0.5 ? [a, b, {t:'pass'}] : [b, a, {t:'pass'}];
+      return R() < 0.5 ? [a, b] : [b, a];
+    }
     // “?”惊喜门：一侧内容未知，另一侧是已知数
     if(!d.bonus && d.rnd > 0 && R() < d.rnd){
       const known = {t:'add', v: ri(8, d.maxAdd)};
-      const rndSide = R() < 0.5;
-      return rndSide ? [{t:'rnd'}, known] : [known, {t:'rnd'}];
+      return R() < 0.5 ? [{t:'rnd'}, known] : [known, {t:'rnd'}];
     }
-    for(let tries=0; tries<30; tries++){
-      let a, b;
-      if(wantTrap){                            // 陷阱对：两边都亏，选亏得少的
-        a = {t:'sub', v: ri(2, Math.max(3, Math.floor(e*0.4)))};
-        b = (d.div && e%2===0 && R()<0.5) ? {t:'div', v:2}
-            : {t:'sub', v: ri(Math.floor(e*0.5), Math.max(Math.floor(e*0.5)+1, e-1))};
-      }else{
-        a = randOp(bothGood); b = randOp(bothGood);
+    // 普通门：高阶一部分是“三选一”
+    const L = (d.gate3 && R() < d.gate3) ? 3 : 2;
+    for(let tries=0; tries<40; tries++){
+      const arr = [];
+      for(let k=0; k<L; k++) arr.push(randOp(R() < 0.18));
+      let ok = true;
+      const vals = arr.map(op => {
+        const v = op.t==='rnd' ? e + 20 : applyOp(e, op);
+        if(v < 1) ok = false;
+        return v;
+      });
+      if(!ok) continue;
+      let best = -1e9, second = -1e9;
+      for(const v of vals){ if(v > best){ second = best; best = v; } else if(v > second) second = v; }
+      if(best >= second*1.3 || best - second >= 10){
+        if(R() < 0.5) arr.reverse();           // 别总把最好的放最左边
+        return arr;
       }
-      const ra = applyOp(e,a), rb = applyOp(e,b);
-      if(ra < 1 || rb < 1 || ra === rb) continue;
-      const hi = Math.max(ra,rb), lo = Math.min(ra,rb);
-      if(hi >= lo*1.3 || hi - lo >= 10) return R()<0.5 ? [a,b] : [b,a];
     }
     const v1 = ri(6, Math.floor(d.maxAdd*0.5)), v2 = ri(v1+10, d.maxAdd+10); // 兜底：大小加法
     return R()<0.5 ? [{t:'add',v:v2},{t:'add',v:v1}] : [{t:'add',v:v1},{t:'add',v:v2}];
@@ -207,19 +228,30 @@ function genLevel(n, up){
   for(let i=0; i<d.pairs; i++){
     const pair = makePair();
     events.push({kind:'gate', z, pair, done:false});
-    // 预期人数按“选得好”估算（?门按 +20 估），上限 999
+    // 预期人数按“选得好”估算（?门按 +20、不变按原样估），上限 999
     const est = op => op.t==='rnd' ? e + 20 : applyOp(e, op);
-    e = Math.min(999, Math.max(est(pair[0]), est(pair[1])));
+    let e2 = 0;
+    for(const op of pair){ const ev = est(op); if(ev > e2) e2 = ev; }
+    e = Math.min(999, e2);
     const seg = d.gap + ri(-15, 25);
     z += seg;
-    // 障碍和敌人每段最多出一个（else if），贴一边放、另一侧永远留宽路，
-    // 放在两段门的中间，不挤门也不互相重叠
-    if(!d.bonus && i >= 1 && i < d.pairs-1 && obsLeft > 0 && R() < 0.5){
-      const w = 0.3 + R()*0.15;
-      const side = R() < 0.5 ? -1 : 1;
-      const ob = {kind:'obs', z: z - seg*0.5,
-                  x: side * (0.95 - w/2), w, dmg: d.obsDmg, done:false};
-      if(d.mv && R() < 0.5) ob.mv = {a: 0.2 + R()*0.15, s: 1.5 + R()*1.5, p: R()*6};
+    // 障碍花样（随关卡解锁：贴边红刺 → 旋转锯片 → 摆锤 → 双刺夹道），
+    // 每段最多一个、放在两段门中间，永远留得出能钻过去的缝
+    if(i >= 1 && i < d.pairs-1 && obsLeft > 0 && R() < 0.5){
+      const w = 0.42 + R()*0.18, zz = z - seg*0.5;
+      const ob = {kind:'obs', z: zz, x: (R()<0.5?-1:1)*(0.98-w/2), w, dmg: d.obsDmg, done:false};
+      if(d.mv && R() < 0.5) ob.mv = {a: 0.22 + R()*0.12, s: 1.4 + R()*1.4, p: R()*6};
+      const roll = R();
+      if(n >= 8 && roll < 0.3){                 // 旋转锯片：在路面中间来回滚
+        ob.kind = 'saw'; ob.x = 0;
+        ob.mv = {a: 0.42, s: 2.2 + R()*1.2, p: R()*6};
+      }else if(n >= 13 && roll < 0.5){          // 摆锤：从高处甩下来的大摆锤
+        ob.kind = 'pend'; ob.x = 0; ob.w = w*1.2;
+        ob.mv = {a: 0.5, s: 1.6 + R()*1.2, p: R()*6};
+      }else if(n >= 17 && roll < 0.62){         // 双刺夹道：两侧尖刺往里夹
+        ob.kind = 'pike';
+        ob.a = 0.34; ob.b = 0.16; ob.s = 2.0 + R()*1.5; ob.p = R()*6;
+      }
       events.push(ob);
       obsLeft--;
     }
@@ -256,10 +288,13 @@ function genLevel(n, up){
   const stairs = [];
   for(let j=1; j<=5; j++)
     stairs.push({mult: j, need: Math.round(M * (j-1) / 4)});
+  // 守门王皮肤：每 8 关换一个颜色，后期体型略微变大，不只是一串数字
+  const bossColor = BOSS_COLORS[Math.floor((n-1)/8) % BOSS_COLORS.length];
+  const bossBig = Math.min(3.1, 2.4 + Math.floor(n/8) * 0.1);
   return {n, start, events, finishZ, length: stairZ0 + 220, theme, decos,
           speed: d.speed, par: e, bonus: d.bonus, stairs,
           stairZ0, stairT: 26,
-          boss, bossMax: boss, bossZ};
+          boss, bossMax: boss, bossZ, bossColor, bossBig};
 }
 
 /* ================= 主题 ================= */
@@ -273,6 +308,9 @@ const THEMES = [
   {sky:['#1a2350','#3b4a8c'], ground:'#2c3560', track:'#4a5588', stripe:'#3d4673',
    crowd:'#ffca28', deco:'star'},
 ];
+
+/* 守门王配色：每 8 关换一档 */
+const BOSS_COLORS = ['#8e24aa','#c62828','#1565c0','#00695c','#ef6c00','#37474f'];
 
 /* ================= 伪 3D 投影 ================= */
 const VIEW = 520;
@@ -338,9 +376,13 @@ const store = {
   setCoinLvl(v){ localStorage.setItem('np_coinlvl', v); },
   color(){ return +(localStorage.getItem('np_color') || 0); },
   setColor(v){ localStorage.setItem('np_color', v); },
+  hat(){ return +(localStorage.getItem('np_hat') || 0); },
+  setHat(v){ localStorage.setItem('np_hat', v); },
 };
 /* 小人颜色皮肤：每攒 6 颗星解锁一个 */
 const COLORS = ['#ff7043','#42a5f5','#66bb6a','#ab47bc','#ffca28','#ec407a'];
+/* 帽子装饰：每攒 8 颗星解锁一个（第 0 个=不戴） */
+const HATS = ['', '🎩', '🪖', '🎀', '🐰', '🌟'];
 function totalStars(){
   let s = 0;
   for(let n = 1; n < store.unlocked; n++) s += store.stars(n);
@@ -348,6 +390,8 @@ function totalStars(){
 }
 const unlockedColors = () => Math.min(COLORS.length, 1 + Math.floor(totalStars()/6));
 const crowdColor = () => COLORS[store.color() % unlockedColors()];
+const unlockedHats = () => Math.min(HATS.length, 1 + Math.floor(totalStars()/8));
+const hatEmoji = () => HATS[store.hat() % unlockedHats()];
 let curLevel = store.unlocked;
 let runCoins = 0, bossResult = null, fightAcc = 0;
 
@@ -410,6 +454,28 @@ function paintPalette(){
     ? '再拿 ' + left + ' 颗 ⭐（攒够 ' + need + ' 颗）解锁下一个'
     : '⭐ 每攒 6 颗解锁一个新颜色';
 }
+function paintHats(){
+  const uh = unlockedHats(), cur = store.hat() % uh;
+  const pal = $('hatPal'); pal.innerHTML = '';
+  for(let i = 0; i < HATS.length; i++){
+    const unlocked = i < uh, b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = unlocked ? (HATS[i] || '🚫') : '🔒';
+    b.style.cssText = 'font-size:20px;width:42px;height:40px;border-radius:12px;padding:0;cursor:pointer;' +
+      'border:' + (i === cur ? '3px solid #2d2a26' : '3px solid transparent') + ';' +
+      'background:' + (unlocked ? '#f0ece3' : '#ddd6c8') + ';';
+    if(unlocked){
+      b.title = i === 0 ? '不戴帽子' : '戴这个';
+      b.onclick = () => { store.setHat(i); sndGood(); paintHats(); };
+    }
+    pal.appendChild(b);
+  }
+  const need = 8 * uh;                       // 解锁下一个帽子需要的总星数
+  const left = Math.max(0, need - totalStars());
+  $('hatHint').textContent = left > 0
+    ? '再拿 ' + left + ' 颗 ⭐（攒够 ' + need + ' 颗）解锁下一个'
+    : '⭐ 每攒 8 颗解锁一个新帽子';
+}
 function refreshShop(){
   $('menuCoins').textContent = '🪙 ' + store.coins() + '　⭐ ' + totalStars();
   const cost = 20 * (store.upLvl() + 1);
@@ -425,6 +491,7 @@ function refreshShop(){
   $('btnCoin').textContent = '🪙 每枚金币 +1（' + c2 + '🪙，现每枚 ' + (1 + store.coinLvl()) + '）';
   $('btnCoin').disabled = store.coins() < c2;
   paintPalette();
+  paintHats();
 }
 $('btnUp').onclick = ()=>{
   const cost = 20 * (store.upLvl() + 1);
@@ -572,12 +639,19 @@ function update(dt){
       if(ev.done || ev.z > pz) continue;
       ev.done = true;
       if(ev.kind === 'gate'){
-        const op = ev.pair[px < 0 ? 0 : 1];
+        const L = ev.pair.length;                 // 两扇或三扇：小人身体中线对准第几扇
+        const op = ev.pair[L === 2
+          ? (px < 0 ? 0 : 1)
+          : Math.max(0, Math.min(L-1, Math.floor((px + 1) * L / 2)))];
         const old = crowd;
         crowd = Math.max(0, Math.min(999, applyOp(crowd, op)));
-        const delta = crowd - old, good = delta >= 0;
-        addFloat((good ? '+' : '') + delta + (good ? '!' : '…'), good);
-        good ? sndGood() : sndBad();
+        const delta = crowd - old;
+        if(op.t === 'pass'){ addFloat('绕过去！人不变', false); sndGood(); }
+        else{
+          const good = delta >= 0;
+          addFloat((good ? '+' : '') + delta + (good ? '!' : '…'), good);
+          good ? sndGood() : sndBad();
+        }
         if(crowd <= 0){ endLevel(true); return; }
       }else if(ev.kind === 'coin'){
         if(Math.abs(px - ev.x) < 0.30){
@@ -598,9 +672,17 @@ function update(dt){
             endLevel(true); return;
           }
         }
-      }else{ // 障碍：撞上才减人（可能会左右移动）
-        const ox = ev.mv ? ev.x + Math.sin(time*ev.mv.s + ev.mv.p)*ev.mv.a : ev.x;
-        if(Math.abs(px - ox) < ev.w/2 + 0.1){
+      }else{ // 障碍：撞上才减人。红刺贴边可绕；锯片/摆锤看时机；双刺夹道钻中间缝
+        let clear;
+        if(ev.kind === 'pike'){
+          const gap = ev.a + Math.sin(time*ev.s + ev.p)*ev.b;   // 中间缝当前多宽
+          clear = Math.abs(px) < gap;
+        }else{
+          const ox = ev.mv ? ev.x + Math.sin(time*ev.mv.s + ev.mv.p)*ev.mv.a : ev.x;
+          const r = ev.kind === 'saw' ? ev.w*0.55 : ev.w/2 + 0.1;
+          clear = Math.abs(px - ox) >= r;
+        }
+        if(!clear){
           crowd = Math.max(0, crowd - ev.dmg);
           addFloat('−' + ev.dmg + '…', false);
           sndBad();
@@ -714,14 +796,15 @@ function drawFight(){
     i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
   });
   ctx.closePath(); ctx.stroke();
-  // 守门王站在高台中央（体型放大）
-  const kH = Math.min(H*0.24, 165);
+  // 守门王站在高台中央（随关卡换色、后期体型更大）
+  const bc = level.bossColor || '#8e24aa';
+  const kH = Math.min(H*0.3, 200) * ((level.bossBig || 2.4) / 2.4);
   const ky = cy - ry*0.2;
-  drawFigure(cx, ky, kH, 0, '#8e24aa');
+  drawFigure(cx, ky, kH, 0, bc);
   // 王的血量牌
   const bs = '👑' + Math.max(0, level.boss), kbh = 52, kbw = kbh + bs.length*16;
   const kby = ky - kH*2.4 - 30;
-  ctx.fillStyle = '#6a1b9a';
+  ctx.fillStyle = bc;
   ctx.beginPath(); ctx.roundRect(cx - kbw/2, kby - kbh/2, kbw, kbh, kbh/2); ctx.fill();
   ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 3; ctx.stroke();
   bigText(bs, cx, kby + 1, 40, '#fff');
@@ -781,28 +864,34 @@ function drawDeco(de, d, theme){
 }
 function drawGate(ev, d){
   const p = persp(d), y = SY(d);
-  const hgt = 128 * p;
-  // 两扇门拼满整条路，中间只留一根细立柱分开左右（对齐原版比例）
-  for(let i=0; i<2; i++){
-    const x0 = SX(i===0 ? -1.0 : 0.052, p), x1 = SX(i===0 ? -0.052 : 1.0, p);
+  const hgt = 128 * p, L = ev.pair.length;
+  // 两扇或三扇门拼满整条路，扇与扇之间用细立柱隔开（对齐原版比例）
+  for(let i=0; i<L; i++){
+    const x0 = SX(-1 + i*2/L + 0.014, p), x1 = SX(-1 + (i+1)*2/L - 0.014, p);
     const op = ev.pair[i];
     const danger = op.t === 'sub' || op.t === 'div';          // 会扣人的门：偏红调提醒
-    ctx.fillStyle = danger ? 'rgba(229,57,53,.28)' : 'rgba(90,180,255,.28)';
+    const pass = op.t === 'pass';                             // 岔路口的“不变”门：灰调
+    ctx.fillStyle = pass ? 'rgba(140,140,150,.30)'
+                 : danger ? 'rgba(229,57,53,.30)' : 'rgba(90,180,255,.30)';
     ctx.beginPath(); ctx.roundRect(x0, y - hgt, x1 - x0, hgt, 10*p); ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = Math.max(1, 2.5*p);
     ctx.stroke();
     // 面板下部一条更深的口子，做出“立在地面”的体积感
     ctx.fillStyle = danger ? 'rgba(200,30,30,.4)' : 'rgba(30,110,220,.35)';
     ctx.fillRect(x0 + (x1-x0)*0.18, y - 5*p, (x1-x0)*0.64, 6*p);
-    // 门上数字：深色底托 + 白粗字，字大约屏高 5%
-    numPlate(opLabel(op), (x0+x1)/2, y - hgt/2, Math.max(15, Math.min(72, H*0.052) * p), '#fff');
+    // 门上的字：深色底托 + 白粗字
+    numPlate(opLabel(op), (x0+x1)/2, y - hgt/2,
+             Math.max(13, Math.min(62, H*0.046) * p), pass ? '#cfd8dc' : '#fff');
   }
-  // 中间分隔立柱
-  const cx0 = SX(-0.028, p), cx1 = SX(0.028, p);
+  // 扇与扇之间的分隔立柱
   ctx.fillStyle = 'rgba(20,60,90,.6)';
-  ctx.beginPath(); ctx.roundRect(cx0, y - hgt, cx1 - cx0, hgt, 3*p); ctx.fill();
-  ctx.fillStyle = 'rgba(255,255,255,.35)';
-  ctx.fillRect(cx0 + (cx1-cx0)*0.35, y - hgt*0.88, Math.max(1,(cx1-cx0)*0.3), hgt*0.76);
+  for(let i=1; i<L; i++){
+    const cx0 = SX(-1 + i*2/L - 0.02, p), cx1 = SX(-1 + i*2/L + 0.02, p);
+    ctx.beginPath(); ctx.roundRect(cx0, y - hgt, cx1 - cx0, hgt, 3*p); ctx.fill();
+    ctx.fillStyle = 'rgba(255,255,255,.35)';
+    ctx.fillRect(cx0 + (cx1-cx0)*0.35, y - hgt*0.88, Math.max(1,(cx1-cx0)*0.3), hgt*0.76);
+    ctx.fillStyle = 'rgba(20,60,90,.6)';
+  }
 }
 function drawObs(ev, d){
   const p = persp(d), y = SY(d);
@@ -818,6 +907,69 @@ function drawObs(ev, d){
     ctx.lineTo(x0 + (i+0.5)*step, y - hgt - 16*p);
     ctx.lineTo(x0 + (i+1)*step, y - hgt);
     ctx.closePath(); ctx.fill();
+  }
+}
+function drawSaw(ev, d){                              // 旋转锯片：在路面滚来滚去
+  const p = persp(d), y = SY(d);
+  const ox = ev.x + Math.sin(time*ev.mv.s + ev.mv.p)*ev.mv.a;
+  const x = SX(ox, p);
+  const rr = Math.max(5, (ev.w*0.55) * W * 0.42 * p);
+  ctx.save();
+  ctx.translate(x, y); ctx.rotate(time*5 + ev.p);
+  ctx.fillStyle = '#cfd8dc';
+  ctx.beginPath(); ctx.arc(0, 0, rr, 0, 7); ctx.fill();
+  ctx.strokeStyle = '#90a4ae'; ctx.lineWidth = Math.max(1, 2*p);
+  for(let i=0;i<6;i++){
+    ctx.beginPath();
+    ctx.arc(0, 0, rr, i/6*6.283, (i+0.5)/6*6.283);
+    ctx.arc(0, 0, rr*0.72, (i+0.5)/6*6.283, i/6*6.283, true);
+    ctx.closePath(); ctx.stroke();
+  }
+  ctx.restore();
+  ctx.fillStyle = '#e53935';                            // 红芯
+  ctx.beginPath(); ctx.arc(x, y, rr*0.38, 0, 7); ctx.fill();
+  ctx.fillStyle = '#b71c1c';
+  ctx.beginPath(); ctx.arc(x, y, rr*0.16, 0, 7); ctx.fill();
+}
+function drawPend(ev, d){                             // 摆锤：横杆上吊的大锤左右甩
+  const p = persp(d), y = SY(d);
+  const topY = y - 165*p, pivotX = SX(ev.x, p);
+  const bobX = SX(ev.x + Math.sin(time*ev.mv.s + ev.mv.p)*ev.mv.a, p);
+  const rBob = Math.max(6, (ev.w*0.5) * W * 0.42 * p);
+  ctx.strokeStyle = '#8d6e63'; ctx.lineWidth = Math.max(3, 5*p);   // 顶梁
+  ctx.beginPath(); ctx.moveTo(pivotX - 90*p, topY); ctx.lineTo(pivotX + 90*p, topY); ctx.stroke();
+  ctx.strokeStyle = '#6d4c41'; ctx.lineWidth = Math.max(2, 3*p);    // 吊链
+  ctx.beginPath(); ctx.moveTo(pivotX, topY); ctx.lineTo(bobX, y - rBob*0.3); ctx.stroke();
+  ctx.fillStyle = '#f57c00';                                      // 锤头（带刺）
+  ctx.beginPath(); ctx.arc(bobX, y - rBob*0.25, rBob, 0, 7); ctx.fill();
+  ctx.fillStyle = '#e65100';
+  for(let i=0;i<6;i++){
+    const a = i/6*6.283 + time*4;
+    ctx.beginPath();
+    ctx.moveTo(bobX + Math.cos(a)*rBob*0.8, y - rBob*0.25 + Math.sin(a)*rBob*0.8);
+    ctx.lineTo(bobX + Math.cos(a)*rBob*1.25, y - rBob*0.25 + Math.sin(a)*rBob*1.25);
+    ctx.stroke();
+  }
+}
+function drawPike(ev, d){                             // 双刺夹道：两侧尖刺，看中间缝
+  const p = persp(d), y = SY(d);
+  const gap = ev.a + Math.sin(time*ev.s + ev.p)*ev.b;            // 中间缝半宽
+  const h = 40*p;
+  for(const sign of [-1, 1]){
+    const x0 = SX(sign * (sign < 0 ? -1 : gap), p);
+    const x1 = SX(sign * (sign < 0 ? gap : 1), p);
+    ctx.fillStyle = '#c62828';
+    ctx.fillRect(Math.min(x0,x1), y - h, Math.abs(x1-x0), h);
+    ctx.fillStyle = '#ef5350';                                    // 顶部尖刺
+    const w = Math.abs(x1-x0), n = Math.max(3, Math.min(10, Math.round(w / Math.max(8, 14*p))));
+    const stp = w / n;
+    for(let i=0;i<n;i++){
+      ctx.beginPath();
+      ctx.moveTo(Math.min(x0,x1) + i*stp, y - h);
+      ctx.lineTo(Math.min(x0,x1) + (i+0.5)*stp, y - h - 16*p);
+      ctx.lineTo(Math.min(x0,x1) + (i+1)*stp, y - h);
+      ctx.closePath(); ctx.fill();
+    }
   }
 }
 function drawCoin(ev, d){
@@ -843,18 +995,20 @@ function drawCoin(ev, d){
 }
 function drawBoss(d){
   const p = persp(d), x = SX(0, p), y = SY(d);
+  const bc = level.bossColor || '#8e24aa';
+  const big = level.bossBig || 2.4;
   // 脚下红色警告圈：守门王的“领地”，人不够别硬闯
   ctx.fillStyle = 'rgba(229,57,53,.18)';
   ctx.beginPath(); ctx.ellipse(x, y, 74*p, 24*p, 0, 0, 7); ctx.fill();
   ctx.strokeStyle = 'rgba(229,57,53,.7)'; ctx.lineWidth = Math.max(1.5, 3*p);
   ctx.beginPath(); ctx.ellipse(x, y, 74*p, 24*p, 0, 0, 7); ctx.stroke();
   const figH = 54 * Math.min(1.3, H/760);
-  drawFigure(x, y, figH*p*2.4, 0, '#8e24aa');                  // 紫色守门王
-  // 守门王血量牌：紫底圆角胶囊（大、醒目）
+  drawFigure(x, y, figH*p*big, 0, bc);                        // 每 8 关换色的守门王
+  // 守门王血量牌：深色圆角胶囊（大、醒目）
   const bs = '👑' + level.boss, bh2 = Math.max(20, 42*p);
   const bw2 = bh2 + bs.length * 15*p;
-  const by = y - figH*p*2.4 - 34*p;
-  ctx.fillStyle = '#6a1b9a';
+  const by = y - figH*p*big - 34*p;
+  ctx.fillStyle = bc;
   ctx.beginPath(); ctx.roundRect(x - bw2/2, by - bh2/2, bw2, bh2, bh2/2); ctx.fill();
   ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = Math.max(2, 3*p); ctx.stroke();
   bigText(bs, x, by + 1, Math.max(18, 30*p), '#fff');
@@ -1002,6 +1156,9 @@ function draw(){
     else if(it.ev.kind === 'gate') drawGate(it.ev, it.d);
     else if(it.ev.kind === 'enemy') drawEnemy(it.ev, it.d);
     else if(it.ev.kind === 'coin') drawCoin(it.ev, it.d);
+    else if(it.ev.kind === 'saw') drawSaw(it.ev, it.d);
+    else if(it.ev.kind === 'pend') drawPend(it.ev, it.d);
+    else if(it.ev.kind === 'pike') drawPike(it.ev, it.d);
     else drawObs(it.ev, it.d);
   }
   // 小人队伍：整团从屏幕底部往上铺，身体完整可见（单人高约屏高 6%）
@@ -1025,6 +1182,12 @@ function draw(){
     const x = Math.max(24, Math.min(W - 24, cx + fx * rr * halfW * sc + (i % 7 - 3) * 3));
     const y = baseY - fd * rr * depth - lift;
     drawFigure(x, y, h0 * sc, i * 0.9, cColor);
+    const he = i < 8 ? hatEmoji() : '';                 // 领头几个戴帽子
+    if(he){
+      ctx.font = '900 ' + Math.max(8, h0 * 0.5 * sc) + 'px sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText(he, x, y - (h0 * sc) * 0.98);
+    }
   }
   // 人数牌：白底圆角胶囊，跟在小队上方（大、醒目）
   const bx = cx, by = baseY - depth - lift - 22;
