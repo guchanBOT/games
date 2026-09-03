@@ -25,6 +25,8 @@
   button:active{transform:translateY(3px);box-shadow:0 2px 0 #c98a00}
   button:disabled{opacity:.45}
   button.small{font-size:18px;padding:12px 26px}
+  button.mini{font-size:14px;padding:6px 13px;margin:0;border-radius:999px;
+    background:#ffffff;color:#2d2a26;box-shadow:0 3px 0 #cfd8dc}
   button.ghost{background:#eceff1;color:#37474f;box-shadow:0 4px 0 #b0bec5}
   .big{font-size:46px;font-weight:900;margin-bottom:8px;text-shadow:0 2px 8px rgba(0,0,0,.5)}
   .stars{font-size:60px;letter-spacing:12px;margin:12px 0;min-height:70px}
@@ -35,6 +37,12 @@
 <body>
 <div id="game"><canvas id="cv"></canvas></div>
 <div class="hud"><div id="hudLevel">第 1 关</div><div id="hudCoin">🪙 0</div><div id="hudTime">⏱ 30 分钟</div><div id="hudCount">👥 5</div></div>
+
+<!-- 局内小按钮：随时回开头 / 开关背景音乐（菜单界面会被遮住） -->
+<div id="ctrl" style="position:fixed;right:12px;top:calc(58px + env(safe-area-inset-top));display:flex;gap:6px;z-index:6">
+  <button id="btnHome" class="mini">🏠 回到开头</button>
+  <button id="btnMute" class="mini">🔊 音乐</button>
+</div>
 
 <div id="lock" class="overlay hidden">
   <div class="big">今天已经玩够 30 分钟啦</div>
@@ -121,6 +129,44 @@ function beep(f, dur, type, g){
 const sndGood = ()=>{ beep(620,.1,'triangle'); setTimeout(()=>beep(880,.12,'triangle'),70); };
 const sndBad  = ()=>beep(170,.25,'sawtooth',.1);
 const sndWin  = ()=>[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.15,'triangle'),i*110));
+
+/* ===== 8-bit 循环背景音乐（自编欢快小调，老式掌机游戏风，非原曲照搬） ===== */
+let bgmOn = true, bgmH = null, bgmStop = true;
+const BGM_NOTE = [
+  // [频率Hz, 时长s]；0 = 休止。整段约 5 秒的欢快上行循环，配低音垫
+  [392,.14],[523,.14],[659,.14],[523,.14],[784,.28],[659,.14],[523,.14],[587,.14],
+  [523,.14],[494,.14],[392,.14],[494,.14],[523,.42],[0,.12],
+  [659,.14],[523,.14],[784,.14],[880,.14],[988,.28],[880,.14],[784,.14],[698,.14],
+  [659,.14],[587,.14],[523,.14],[587,.14],[659,.42],[0,.12],
+  [196,.56],[0,.12],[196,.28],[147,.28],[131,.56],[0,.12]
+];
+function tone(f, dur, v, type){                   // 发一个 8-bit 短音
+  try{
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if(AC.state === 'suspended') AC.resume();
+    const o = AC.createOscillator(), gn = AC.createGain(), t0 = AC.currentTime;
+    o.type = type || 'square'; o.frequency.value = f;
+    gn.gain.setValueAtTime(v || 0.045, t0);
+    gn.gain.exponentialRampToValueAtTime(0.001, t0 + dur);
+    o.connect(gn); gn.connect(AC.destination);
+    o.start(t0); o.stop(t0 + dur + 0.02);
+  }catch(e){}
+}
+function startBgm(){
+  if(!bgmOn || bgmH) return;
+  bgmStop = false;
+  let i = 0;
+  const playNext = ()=>{
+    if(bgmStop || !bgmOn){ bgmH = null; return; }
+    const n = BGM_NOTE[i];
+    if(n[0]) tone(n[0], n[1], n[1] > 0.3 ? 0.03 : 0.05, n[0] < 300 ? 'triangle' : 'square');
+    i = (i + 1) % BGM_NOTE.length;
+    bgmH = setTimeout(playNext, Math.max(70, n[1]*1000 - 25));
+  };
+  playNext();
+}
+function stopBgm(){ bgmStop = true; if(bgmH){ clearTimeout(bgmH); bgmH = null; } }
+function setBgmBtn(){ $('btnMute').textContent = bgmOn ? '🔊 音乐' : '🔇 音乐'; }
 
 /* ================= 关卡配方 ================= */
 function diffOf(n){
@@ -285,7 +331,7 @@ function genLevel(n, up){
   const decos = [];
   for(let i=0; i<Math.ceil((finishZ+200)/45); i++)
     decos.push({z: i*45 + R()*25, side:(R()<0.5?-1:1)*(1.25+R()*0.9), k:R()});
-  // 关底布局：跑道结束 → 上一座擂台(守门王站中间) → 打赢后再拉开一段才到 ×台阶
+  // 关底布局：跑道结束 → 上一座擂台(胖虎站中间) → 打赢后再拉开一段才到 ×台阶
   const bossZ = finishZ + 46;                    // 擂台中心
   const stairZ0 = finishZ + 150;                 // 登塔台阶，和擂台明显分开
   // 王血 = 预期人数 × 王系数。系数随关卡逐关变高（第1关 0.50 → 第60关 0.80），
@@ -296,13 +342,13 @@ function genLevel(n, up){
   const BOSS_FMAX  = 0.80;      // 封顶系数（≈第60关），再往后不再变难
   const bossF = Math.min(BOSS_FMAX, BOSS_F0 + (n - 1) * BOSS_FSTEP);
   const boss  = Math.min(MAXC, Math.max(8, Math.floor(e * bossF)));
-  // ×台阶门槛按“撞完守门王还剩多少”来标：顶台留 20% 余量，
+  // ×台阶门槛按“撞完胖虎还剩多少”来标：顶台留 20% 余量，
   // 这样“每个门都选得差不多对”就能上顶台 ×5（而不是必须极限完美）
   const M = Math.max(2, Math.floor((e - boss) * 0.8));
   const stairs = [];
   for(let j=1; j<=5; j++)
     stairs.push({mult: j, need: Math.round(M * (j-1) / 4)});
-  // 守门王皮肤：每 8 关换一个颜色，后期体型略微变大，不只是一串数字
+  // 胖虎皮肤：每 8 关换一个颜色，后期体型略微变大，不只是一串数字
   const bossColor = BOSS_COLORS[Math.floor((n-1)/8) % BOSS_COLORS.length];
   const bossBig = Math.min(3.1, 2.4 + Math.floor(n/8) * 0.1);
   return {n, start, events, finishZ, length: stairZ0 + 220, theme, decos,
@@ -323,7 +369,7 @@ const THEMES = [
    crowd:'#ffca28', deco:'star'},
 ];
 
-/* 守门王配色：每 8 关换一档 */
+/* 胖虎配色：每 8 关换一档 */
 const BOSS_COLORS = ['#8e24aa','#c62828','#1565c0','#00695c','#ef6c00','#37474f'];
 
 /* ================= 伪 3D 投影 ================= */
@@ -417,7 +463,7 @@ const crowdColor = () => COLORS[store.color() % Math.max(1, unlockedColors())];
 const hatEmoji = () => HATS[store.hat() % Math.max(1, unlockedHats())];
 let curLevel = store.unlocked;
 let runCoins = 0, bossResult = null, fightAcc = 0;
-let fightFx = null;              // 守门王战胜负的小动画：{kind:'win'|'lose', t:播放时长}
+let fightFx = null;              // 胖虎战胜负的小动画：{kind:'win'|'lose', t:播放时长}
 
 /* ================= 输入 ================= */
 let ptrX = null;
@@ -630,19 +676,20 @@ function startLevel(){
   $('hudLevel').textContent = '第 ' + curLevel + ' 关';
   $('hudCount').textContent = '👥 ' + crowd;
   $('hudCoin').textContent = '🪙 ' + store.coins();
+  if(bgmOn) startBgm();                    // 点开始 = 用户手势，此时起背景乐最稳
 }
 function endLevel(fail){
   state = 'over';
   let stars, title, info;
   if(fail){
     stars = 0;
-    if(bossResult === 'lose'){                   // 守门王战输了 = 卡关：这关不算过，重试攒人
-      title = '守门王赢了…';
+    if(bossResult === 'lose'){                   // 胖虎战输了 = 卡关：这关不算过，重试攒人
+      title = '胖虎赢了…';
       info = '小人全被打散了 · 多攒点人再来撞！';
     }else{
       title = '哎呀，小人都没有啦'; info = '别灰心，再试一次！';
     }
-  }else{                                         // 撞倒守门王 → 爬上 ×台阶 结算
+  }else{                                         // 撞倒胖虎 → 爬上 ×台阶 结算
     let stair = 0;
     for(const s of level.stairs) if(crowd >= s.need) stair = s.mult;
     const score = crowd * Math.max(1, stair);
@@ -654,7 +701,7 @@ function endLevel(fail){
     info = crowd + ' 人 × ' + Math.max(1,stair) + ' 倍 = ' + score + ' 分'
          + ' · 结算 +' + reward + '🪙'
          + (runCoins ? ' · 途中捡 ' + runCoins + '🪙' : '');
-    if(bossResult === 'win') info = '撞倒守门王 +5🪙 · ' + info;
+    if(bossResult === 'win') info = '撞倒胖虎 +5🪙 · ' + info;
   }
   if(fail){
     sndBad();
@@ -683,6 +730,13 @@ $('btnNext').onclick = ()=>{
   const m = TEST_BUILD ? 60 : store.unlocked;
   curLevel = Math.min(m, curLevel + 1); showMenu();
 };
+$('btnHome').onclick = ()=>{ sndBad(); showMenu(); };   // 随时回开头
+$('btnMute').onclick = ()=>{
+  bgmOn = !bgmOn;
+  if(bgmOn) startBgm(); else stopBgm();
+  setBgmBtn();
+};
+setBgmBtn();
 
 function spawnConfetti(){
   for(let i=0;i<50;i++) confetti.push({
@@ -762,11 +816,11 @@ function update(dt){
       $('hudCount').textContent = '👥 ' + crowd;
     }
     if(pz >= level.finishZ){
-      state = 'fight';                          // 每关关底都先撞守门王
+      state = 'fight';                          // 每关关底都先撞胖虎
       finT = 0;
     }
   }
-  else if(state === 'fight'){                   // 守门王战：双方小人互相扑，人多的剩差额登塔
+  else if(state === 'fight'){                   // 胖虎战：双方小人互相扑，人多的剩差额登塔
     finT += dt;
     px += (0 - px) * Math.min(1, dt*6); targetX = 0;
     if(pz < level.bossZ){ pz += 150 * level.speed * dt; }
@@ -780,7 +834,7 @@ function update(dt){
     }else{
       if(level.fstep === undefined){            // 开场一次性定死步长 → 固定 ~1.8 秒线性打完
         level.fstep = Math.max(1, Math.ceil(Math.min(crowd, level.boss) / 36));
-        addFloat('和守门王打起来啦！', true); sndGood();
+        addFloat('和胖虎打起来啦！', true); sndGood();
       }
       fightAcc += dt;
       while(fightAcc > 0.05 && level.boss > 0 && crowd > 0){
@@ -790,7 +844,7 @@ function update(dt){
         beep(280 + Math.random()*220, .05, 'square', .05);
       }
       $('hudCount').textContent = '👥 ' + crowd;
-      if(crowd > 0 && level.boss <= 0){         // 撞倒守门王：先放倒他再庆祝
+      if(crowd > 0 && level.boss <= 0){         // 撞倒胖虎：先放倒他再庆祝
         level.boss = 0; bossResult = 'win';
         store.addCoins(5); addFloat('+5🪙', true);
         $('hudCoin').textContent = '🪙 ' + store.coins();
@@ -841,7 +895,7 @@ function numPlate(s, x, y, px, fill){
   ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = Math.max(1, px*0.06); ctx.stroke();
   bigText(s, x, y, px, fill);
 }
-// 守门王大战：切到屏幕中央的“擂台特写”，高台+围绳，我方往上冲
+// 胖虎大战：切到屏幕中央的“擂台特写”，高台+围绳，我方往上冲
 // 打赢：王侧倒砸地 → 金星四溅 → 我方欢呼跳；打输：我方小人被甩飞淡出
 function drawFight(){
   const eff = fightFx;
@@ -855,7 +909,7 @@ function drawFight(){
   g.addColorStop(1, '#000');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   // 大字标题：打起来 / 打赢 / 打输，各说各话
-  bigText(fxW ? '🎉 撞倒守门王！' : fxL ? '💨 守门王赢了…' : '👑 守门王之战',
+  bigText(fxW ? '🎉 打倒胖虎！' : fxL ? '💨 胖虎赢了…' : '💪 胖虎来啦！',
           W/2, Math.max(44, H*0.10), Math.min(W*0.05, 46), fxL ? '#ff8a80' : '#ffd54f');
   ctx.fillStyle = 'rgba(255,255,255,.06)';
   ctx.beginPath(); ctx.arc(cx, H*0.60, Math.min(W*0.44, 420), 0, 7); ctx.fill();
@@ -888,7 +942,7 @@ function drawFight(){
     i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
   });
   ctx.closePath(); ctx.stroke();
-  // 守门王
+  // 胖虎
   const bc = level.bossColor || '#8e24aa';
   const kH = Math.min(H*0.3, 200) * ((level.bossBig || 2.4) / 2.4);
   const ky = cy - ry*0.2;
@@ -903,7 +957,7 @@ function drawFight(){
     ctx.translate(cx, ky + (lying ? kH*0.05 : sink));
     ctx.rotate(ang);
     if(lying) ctx.globalAlpha = Math.max(0.35, 1 - Math.max(0, eff.t - 1.1)); // 趴一会儿再淡出
-    drawFigure(0, 0, kH, 0.2, bc);
+    drawPeep(0, 0, kH, '', 0.2, 'gi');
     ctx.restore(); ctx.globalAlpha = 1;
     // 砸地音效（只响一次）
     if(lying && level.boomFired === undefined){
@@ -925,7 +979,7 @@ function drawFight(){
       // 王冠掉在一旁，晕晕的星星在脑袋位置转
       ctx.font = '900 ' + Math.max(16, kH*0.2) + 'px sans-serif';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.fillText('👑', cx - kH*0.85, ky + 8 + Math.sin(eff.t*9)*4, );
+      ctx.fillText('💢', cx - kH*0.85, ky + 8 + Math.sin(eff.t*9)*4, );
       const dsw = eff.t - 0.55;
       for(let i = 0; i < 3; i++){
         const sa = dsw*6 + i*2.1;
@@ -939,7 +993,7 @@ function drawFight(){
     ctx.fillStyle = 'rgba(255,60,60,.22)';                    // 王脚下红光更凶
     ctx.beginPath(); ctx.ellipse(cx, cy + ry*0.9, rx*0.6, ry*1.7, 0, 0, 7); ctx.fill();
     const bob = Math.sin(time*4) * kH*0.035;
-    drawFigure(cx, ky + bob, kH, 0, bc);
+    drawPeep(cx, ky + bob, kH, '', 0, 'gi');
     const u = Math.min(1, eff.t / 1.05);
     for(let i = 0; i < 18; i++){
       const a = i*2.399963 + 0.6;
@@ -949,16 +1003,16 @@ function drawFight(){
       const ang = -u*3.4 + ((i*7)%2 ? 1 : -1)*0.5;
       ctx.globalAlpha = Math.max(0, 1 - u*1.5);
       ctx.save(); ctx.translate(sx, sy); ctx.rotate(ang);
-      drawFigure(0, 0, Math.max(13, kH*0.14), i*0.7, '#9e9e9e');
+      drawPeep(0, 0, Math.max(13, kH*0.14), '#9e9e9e', i*0.7, 'nob');
       ctx.restore();
     }
     ctx.globalAlpha = 1;
   }else{
-    drawFigure(cx, ky, kH, 0, bc);                             // 开打：王站在台上
+    drawPeep(cx, ky, kH, '', 0, 'gi');                         // 开打：胖虎站在台上
   }
   // 王的血量牌（打起来和打输时显示；王倒地打赢了就撤掉）
   if(!fxW && level.boss > 0){
-    const bs = '👑' + level.boss, kbh = 52, kbw = kbh + bs.length*16;
+    const bs = '💪' + level.boss, kbh = 52, kbw = kbh + bs.length*16;
     const kby = ky - kH*2.4 - 30;
     ctx.fillStyle = bc;
     ctx.beginPath(); ctx.roundRect(cx - kbw/2, kby - kbh/2, kbw, kbh, kbh/2); ctx.fill();
@@ -979,7 +1033,7 @@ function drawFight(){
       const sy = baseY - Math.abs(Math.sin(aa)) * rr2 * H*0.18
                + Math.sin(time*16 + i)*6
                - joy * joy * Math.abs(Math.sin(time*13 + i*1.7)) * kH*0.22;   // 蹦跳欢呼
-      drawFigure(sx, sy, Math.max(18, H*0.045) * (1 - rr2*0.25), i*0.7, cc);
+      drawPeep(sx, sy, Math.max(18, H*0.045) * (1 - rr2*0.25), cc, i*0.7, 'nob');
     }
     // 我方人数牌
     const cs = String(crowd), cbh = 38, cbw = Math.max(48, 24 + cs.length*17);
@@ -993,7 +1047,7 @@ function drawFight(){
   }
   // 一句话点题
   if(!fxW && !fxL) bigText('人多的一方赢！', cx, H*0.745, 42, '#ffe082');
-  if(fxW) bigText('闯过守门王 → 冲上 ×台阶！', cx, H*0.76, 40, '#fff9c4');
+  if(fxW) bigText('打赢胖虎 → 冲上 ×台阶！', cx, H*0.76, 40, '#fff9c4');
   if(fxL) bigText('小人被打散了… 多攒点人再来', cx, H*0.76, 38, '#ffccbc');
 }
 function drawFigure(x, y, h, phase, color){
@@ -1009,6 +1063,69 @@ function drawFigure(x, y, h, phase, color){
   ctx.stroke();
   ctx.fillStyle = color;
   ctx.beginPath(); ctx.arc(x, y - h*0.85, headR, 0, 7); ctx.fill();  // 头
+}
+// 主题小人物：dora=哆啦A梦(蓝脸白嘴红鼻) / nob=大雄们(衬衫颜色可换) / gi=胖虎(紫衫圆脸)
+function drawPeep(x, y, h, shirt, phase, who){
+  const swing = Math.sin(time*14 + phase);
+  const hipY = y - h*0.45, shoY = y - h*0.70;
+  const skin = '#ffd7a8';
+  const isDora = who === 'dora', isGi = who === 'gi';
+  const headR = h * (isDora ? 0.27 : isGi ? 0.23 : 0.20);
+  const headCy = y - h*(isDora ? 0.95 : 0.90);
+  const bodyC = isDora ? '#1e88e5' : isGi ? '#7b1fa2' : (shirt || '#ffc400');
+  // 裤子/腿
+  ctx.strokeStyle = isDora ? '#0d47a1' : '#455a64';
+  ctx.lineWidth = Math.max(1.5, h*0.055); ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(x, hipY); ctx.lineTo(x + swing*h*0.2, y);
+  ctx.moveTo(x, hipY); ctx.lineTo(x - swing*h*0.2, y);
+  ctx.stroke();
+  // 上衣
+  ctx.strokeStyle = bodyC;
+  ctx.lineWidth = Math.max(1.5, h*0.06);
+  ctx.beginPath();
+  ctx.moveTo(x, hipY); ctx.lineTo(x, shoY);
+  ctx.moveTo(x, shoY); ctx.lineTo(x - swing*h*0.16, y - h*0.42);
+  ctx.moveTo(x, shoY); ctx.lineTo(x + swing*h*0.16, y - h*0.30);
+  ctx.stroke();
+  // 头
+  ctx.fillStyle = isDora ? '#2196f3' : skin;
+  ctx.beginPath(); ctx.arc(x, headCy, headR, 0, 7); ctx.fill();
+  if(isDora){                                       // 哆啦A梦：白嘴 + 红鼻 + 胡子
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(x, headCy + headR*0.25, headR*0.5, 0, 7); ctx.fill();
+    ctx.fillStyle = '#e53935';
+    ctx.beginPath(); ctx.arc(x, headCy + headR*0.32, headR*0.18, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#1565c0'; ctx.lineWidth = Math.max(1, h*0.018);
+    for(const s of [-1, 1]){
+      ctx.beginPath();
+      ctx.moveTo(x + s*headR*0.6, headCy - headR*0.1);
+      ctx.lineTo(x + s*headR*1.25, headCy - headR*0.02);
+      ctx.stroke();
+    }
+    ctx.fillStyle = '#0d47a1';
+    ctx.beginPath(); ctx.arc(x - headR*0.38, headCy - headR*0.05, headR*0.07, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(x + headR*0.38, headCy - headR*0.05, headR*0.07, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#ffb300'; ctx.lineWidth = Math.max(1, h*0.03);
+    ctx.beginPath(); ctx.arc(x, hipY, h*0.035, 0, 7); ctx.stroke();   // 铃铛
+  }else if(isGi){                                   // 胖虎：圆脸 + 冲天发 + 凶眉
+    ctx.fillStyle = '#37474f';
+    ctx.beginPath(); ctx.arc(x, headCy - headR*0.55, headR*0.32, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#263238'; ctx.lineWidth = Math.max(1.2, h*0.03);
+    ctx.beginPath(); ctx.moveTo(x, headCy - headR); ctx.lineTo(x, headCy - headR*1.4); ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(x - headR*0.35, headCy + headR*0.05, headR*0.11, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(x + headR*0.35, headCy + headR*0.05, headR*0.11, 0, 7); ctx.fill();
+    ctx.strokeStyle = '#455a64'; ctx.lineWidth = Math.max(1, h*0.02);
+    ctx.beginPath(); ctx.moveTo(x - headR*0.7, headCy - headR*0.35); ctx.lineTo(x - headR*0.25, headCy - headR*0.6); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x + headR*0.7, headCy - headR*0.35); ctx.lineTo(x + headR*0.25, headCy - headR*0.6); ctx.stroke();
+  }else{                                           // 大雄：褐发髻 + 两眼
+    ctx.fillStyle = '#3e2723';
+    ctx.beginPath(); ctx.arc(x, headCy - headR*0.25, headR*0.95, Math.PI*1.05, Math.PI*1.95); ctx.fill();
+    ctx.fillStyle = '#263238';
+    ctx.beginPath(); ctx.arc(x - headR*0.32, headCy + headR*0.05, headR*0.09, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(x + headR*0.32, headCy + headR*0.05, headR*0.09, 0, 7); ctx.fill();
+  }
 }
 function drawDeco(de, d, theme){
   const p = persp(d), x = SX(de.side, p), y = SY(d), s = p * 46;
@@ -1163,15 +1280,15 @@ function drawBoss(d){
   const p = persp(d), x = SX(0, p), y = SY(d);
   const bc = level.bossColor || '#8e24aa';
   const big = level.bossBig || 2.4;
-  // 脚下红色警告圈：守门王的“领地”，人不够别硬闯
+  // 脚下红色警告圈：胖虎的“领地”，人不够别硬闯
   ctx.fillStyle = 'rgba(229,57,53,.18)';
   ctx.beginPath(); ctx.ellipse(x, y, 74*p, 24*p, 0, 0, 7); ctx.fill();
   ctx.strokeStyle = 'rgba(229,57,53,.7)'; ctx.lineWidth = Math.max(1.5, 3*p);
   ctx.beginPath(); ctx.ellipse(x, y, 74*p, 24*p, 0, 0, 7); ctx.stroke();
   const figH = 54 * Math.min(1.3, H/760);
-  drawFigure(x, y, figH*p*big, 0, bc);                        // 每 8 关换色的守门王
-  // 守门王血量牌：深色圆角胶囊（大、醒目）
-  const bs = '👑' + level.boss, bh2 = Math.max(20, 42*p);
+  drawPeep(x, y, figH*p*big, '', 0, 'gi');                    // 每 8 关换色牌子的胖虎
+  // 胖虎血量牌：深色圆角胶囊（大、醒目）
+  const bs = '💪' + level.boss, bh2 = Math.max(20, 42*p);
   const bw2 = bh2 + bs.length * 15*p;
   const by = y - figH*p*big - 34*p;
   ctx.fillStyle = bc;
@@ -1179,7 +1296,7 @@ function drawBoss(d){
   ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = Math.max(2, 3*p); ctx.stroke();
   bigText(bs, x, by + 1, Math.max(18, 30*p), '#fff');
 }
-function drawArena(){                       // 守门王的擂台：椭圆形台面 + 四角桩
+function drawArena(){                       // 胖虎的擂台：椭圆形台面 + 四角桩
   const zc = level.bossZ, d = zc - pz;
   if(d > VIEW + 30 || d < -100) return;
   const p = persp(d), y = SY(d), xc = SX(0, p);
@@ -1350,7 +1467,7 @@ function draw(){
     const sc = 1 - 0.3 * (fd * rr);                            // 越往后越小
     const x = Math.max(24, Math.min(W - 24, cx + fx * rr * halfW * sc + (i % 7 - 3) * 3));
     const y = baseY - fd * rr * depth - lift;
-    drawFigure(x, y, h0 * sc, i * 0.9, cColor);
+    drawPeep(x, y, h0 * sc, cColor, i * 0.9, 'nob');       // 大雄们（衬衫颜色可换）
     const he = (heTop && i < hatK) ? heTop : '';          // 戴帽子的人数随队伍涨
     if(he){
       ctx.font = '900 ' + Math.max(8, h0 * 0.5 * sc) + 'px sans-serif';
@@ -1358,6 +1475,8 @@ function draw(){
       ctx.fillText(he, x, y - (h0 * sc) * 0.98);
     }
   }
+  // 哆啦A梦在最前面领队（比后排大一号、稳站中间）
+  drawPeep(cx, baseY, h0 * 1.15, '', 0, 'dora');
   // 人数牌：白底圆角胶囊，跟在小队上方（大、醒目）
   const bx = cx, by = baseY - depth - lift - 22;
   const tx = String(crowd), bw = Math.max(34, 20 + tx.length * 14), bh = 28;
