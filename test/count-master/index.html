@@ -227,7 +227,7 @@ function genLevel(n, up){
       const wide = R() < 0.6;
       events.push({kind:'enemy', z: z - seg*0.5,
                    x: wide ? 0 : (R() < 0.5 ? -0.55 : 0.55),
-                   r: wide ? 0.78 : 0.42, n: en, done:false});
+                   r: wide ? 0.55 : 0.36, n: en, done:false});    // 圈径≈路宽40–60%
       e = Math.max(1, e - en);
       enemiesLeft--;
     }
@@ -502,8 +502,12 @@ function endLevel(fail){
     const score = crowd * Math.max(1, stair);
     stars = stair >= 5 ? 3 : stair >= 3 ? 2 : 1;
     title = ['','不错哦！','太棒了！','完美！'][stars];
+    // 按剩余人数结算金币（对齐原版：人留得越多奖励越多）
+    const reward = Math.max(2, Math.floor(crowd / 2));
+    store.addCoins(reward);
     info = crowd + ' 人 × ' + Math.max(1,stair) + ' 倍 = ' + score + ' 分'
-         + (runCoins ? ' · 捡到 ' + runCoins + '🪙' : '');
+         + ' · 结算 +' + reward + '🪙'
+         + (runCoins ? ' · 途中捡 ' + runCoins + '🪙' : '');
     if(bossResult === 'win') info = '撞倒守门王 +5🪙 · ' + info;
   }
   if(fail){
@@ -674,18 +678,31 @@ function drawDeco(de, d, theme){
 }
 function drawGate(ev, d){
   const p = persp(d), y = SY(d);
-  const hgt = 130 * p;
+  const hgt = 128 * p;
+  // 两扇门拼满整条路，中间只留一根细立柱分开左右（对齐原版比例）
   for(let i=0; i<2; i++){
-    const x0 = SX(i===0 ? -0.98 : 0.04, p), x1 = SX(i===0 ? -0.04 : 0.98, p);
-    ctx.fillStyle = 'rgba(61,155,233,.88)';
-    ctx.beginPath(); ctx.roundRect(x0, y - hgt, x1 - x0, hgt, 8*p); ctx.fill();
-    ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = Math.max(1, 2.5*p);
+    const x0 = SX(i===0 ? -1.0 : 0.052, p), x1 = SX(i===0 ? -0.052 : 1.0, p);
+    const op = ev.pair[i];
+    const danger = op.t === 'sub' || op.t === 'div';          // 会扣人的门：偏红调提醒
+    ctx.fillStyle = danger ? 'rgba(229,57,53,.28)' : 'rgba(90,180,255,.28)';
+    ctx.beginPath(); ctx.roundRect(x0, y - hgt, x1 - x0, hgt, 10*p); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = Math.max(1, 2.5*p);
     ctx.stroke();
+    // 面板下部一条更深的口子，做出“立在地面”的体积感
+    ctx.fillStyle = danger ? 'rgba(200,30,30,.4)' : 'rgba(30,110,220,.35)';
+    ctx.fillRect(x0 + (x1-x0)*0.18, y - 5*p, (x1-x0)*0.64, 6*p);
+    // 门上数字：白粗体，字号约屏高 4%
     ctx.fillStyle = '#fff';
-    ctx.font = '800 ' + Math.max(10, 46*p) + 'px sans-serif';
+    ctx.font = '800 ' + Math.max(10, Math.min(54, H*0.042) * p) + 'px sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(opLabel(ev.pair[i]), (x0+x1)/2, y - hgt/2);
+    ctx.fillText(opLabel(op), (x0+x1)/2, y - hgt/2);
   }
+  // 中间分隔立柱
+  const cx0 = SX(-0.028, p), cx1 = SX(0.028, p);
+  ctx.fillStyle = 'rgba(20,60,90,.6)';
+  ctx.beginPath(); ctx.roundRect(cx0, y - hgt, cx1 - cx0, hgt, 3*p); ctx.fill();
+  ctx.fillStyle = 'rgba(255,255,255,.35)';
+  ctx.fillRect(cx0 + (cx1-cx0)*0.35, y - hgt*0.88, Math.max(1,(cx1-cx0)*0.3), hgt*0.76);
 }
 function drawObs(ev, d){
   const p = persp(d), y = SY(d);
@@ -733,12 +750,15 @@ function drawBoss(d){
   ctx.beginPath(); ctx.ellipse(x, y, 74*p, 24*p, 0, 0, 7); ctx.stroke();
   const figH = 54 * Math.min(1.3, H/760);
   drawFigure(x, y, figH*p*2.4, 0, '#8e24aa');                  // 紫色守门王
+  // 守门王血量牌：紫底圆角胶囊
+  const bs = '👑' + level.boss, bh2 = Math.max(13, 26*p);
+  const bw2 = bh2 + bs.length * 11*p;
   const by = y - figH*p*2.4 - 24*p;
   ctx.fillStyle = '#8e24aa';
-  ctx.beginPath(); ctx.arc(x, by, Math.max(9, 24*p), 0, 7); ctx.fill();
-  ctx.fillStyle = '#fff'; ctx.font = '800 ' + Math.max(10, 22*p) + 'px sans-serif';
+  ctx.beginPath(); ctx.roundRect(x - bw2/2, by - bh2/2, bw2, bh2, bh2/2); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.font = '800 ' + Math.max(10, 19*p) + 'px sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('👑' + level.boss, x, by + 1);
+  ctx.fillText(bs, x, by + 1);
 }
 function drawStairs(){
   // 五级台阶一级级往上升：前立面(暗金)+受光台面，站上去越高级 × 倍数越大
@@ -793,13 +813,15 @@ function drawEnemy(ev, d){
     const row = Math.floor(i / 4), col = i % 4;
     drawFigure(x + (col-1.5)*14*p*2, y - row*20*p - (col%2)*8*p, figH*p*0.9, i*1.3, '#b71c1c');
   }
-  // 敌方人数牌（红底白字）
+  // 敌方人数牌：红底圆角胶囊白字
+  const es = String(ev.n), bh = Math.max(13, 17*p);
+  const bw = Math.max(15, bh + es.length * 9*p);
   const by = y - figH*p - 30*p - 10;
   ctx.fillStyle = '#c62828';
-  ctx.beginPath(); ctx.arc(x, by, Math.max(8, 20*p), 0, 7); ctx.fill();
-  ctx.fillStyle = '#fff'; ctx.font = '800 ' + Math.max(9, 18*p) + 'px sans-serif';
+  ctx.beginPath(); ctx.roundRect(x - bw/2, by - bh/2, bw, bh, bh/2); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.font = '800 ' + Math.max(9, 15*p) + 'px sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(ev.n, x, by + 1);
+  ctx.fillText(es, x, by + 1);
 }
 function draw(){
   const th = level.theme;
@@ -879,13 +901,15 @@ function draw(){
     const y = baseY - fd * rr * depth - lift;
     drawFigure(x, y, h0 * sc, i * 0.9, cColor);
   }
-  // 人数牌（跟在小队上方）
+  // 人数牌：白底圆角胶囊，跟在小队上方
   const bx = cx, by = baseY - depth - lift - 18;
-  ctx.fillStyle = 'rgba(255,255,255,.94)';
-  ctx.beginPath(); ctx.arc(bx, by, Math.max(16, 22), 0, 7); ctx.fill();
-  ctx.fillStyle = '#333'; ctx.font = '800 22px sans-serif';
+  const tx = String(crowd), bw = Math.max(30, 18 + tx.length * 12), bh = 24;
+  ctx.fillStyle = 'rgba(255,255,255,.95)';
+  ctx.beginPath(); ctx.roundRect(bx - bw/2, by - bh/2, bw, bh, bh/2); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,.15)'; ctx.lineWidth = 1.5; ctx.stroke();
+  ctx.fillStyle = '#333'; ctx.font = '800 17px sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(crowd, bx, by + 1);
+  ctx.fillText(tx, bx, by + 1);
   // 浮动反馈文字
   for(const f of floats){
     ctx.globalAlpha = Math.max(0, 1 - f.age/1.3);
