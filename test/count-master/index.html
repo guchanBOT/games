@@ -121,23 +121,23 @@ const sndWin  = ()=>[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.15,
 /* ================= 关卡配方 ================= */
 function diffOf(n){
   return {
-    maxAdd : Math.min(60, 14 + n*3),          // 加法数字上限
-    pairs  : Math.min(20, 8 + n),             // 门的对数
-    gap    : Math.max(130, 175 - n*2),        // 门间距（越小越难）
-    sub    : n >= 3,                          // 减法出现
-    mul    : n >= 5,                          // ×2 出现
-    mul3   : n >= 8,                          // ×3 出现
-    div    : n >= 10,                         // ÷2 出现（对齐原版：除法基本只有 ÷2）
-    gate3  : n >= 16 ? (n >= 22 ? 0.55 : 0.3) : 0,   // 一部分门变“三选一”
-    super  : n >= 18,                         // 少量超大门 ×4
-    fork   : n >= 18,                         // 陷阱可能升级成“岔路”：多一个不变选项
-    trap   : n >= 12 ? 0.2 : 0,               // “两边都亏”陷阱对概率
-    rnd    : n >= 8 ? 0.15 : 0,               // “?”惊喜门概率
-    mv     : n >= 10,                         // 障碍会左右移动
-    obs    : n >= 4 ? Math.min(5, 1 + Math.floor(n/4)) : 0, // 障碍数量上限
-    obsDmg : 3 + Math.floor(n/3),
-    enemies: n >= 7 ? (n >= 15 ? 2 : 1) : 0,  // 敌方队伍数量（越后越多）
-    speed  : Math.min(1.6, 0.9 + n*0.05),      // 越到后面跑得越快
+    maxAdd : Math.min(55, Math.round(12 + n*2.4)),   // 加法数字上限（增长放缓）
+    pairs  : Math.min(18, 6 + n),              // 门的对数（少一点，节奏慢一点）
+    gap    : Math.max(150, Math.round(196 - n*1.6)), // 门间距（缩得更慢）
+    sub    : n >= 3,                           // 减法出现
+    mul    : n >= 5,                           // ×2 出现
+    mul3   : n >= 9,                           // ×3 出现
+    div    : n >= 12,                          // ÷2 出现（对齐原版：除法基本只有 ÷2）
+    gate3  : n >= 18 ? (n >= 26 ? 0.5 : 0.28) : 0,  // 一部分门变“三选一”
+    super  : n >= 22,                          // 少量超大门 ×4
+    fork   : n >= 20,                          // 陷阱可能升级成“岔路”：多一个不变选项
+    trap   : n >= 14 ? 0.18 : 0,               // “两边都亏”陷阱对概率
+    rnd    : n >= 9 ? 0.15 : 0,                // “?”惊喜门概率
+    mv     : n >= 12,                          // 障碍会左右移动
+    obs    : n >= 5 ? Math.min(4, 1 + Math.floor(n/5)) : 0, // 障碍数量上限
+    obsDmg : 3 + Math.floor(n/4),              // 障碍伤害涨得慢
+    enemies: n >= 8 ? (n >= 18 ? 2 : 1) : 0,   // 敌方队伍数量（越后越多）
+    speed  : Math.min(1.45, 0.92 + n*0.035),   // 速度爬得更平缓
   };
 }
 function applyOp(n, op){
@@ -243,13 +243,13 @@ function genLevel(n, up){
       const ob = {kind:'obs', z: zz, x: (R()<0.5?-1:1)*(0.98-w/2), w, dmg: d.obsDmg, done:false};
       if(d.mv && R() < 0.5) ob.mv = {a: 0.22 + R()*0.12, s: 1.4 + R()*1.4, p: R()*6};
       const roll = R();
-      if(n >= 8 && roll < 0.3){                 // 旋转锯片：在路面中间来回滚
+      if(n >= 10 && roll < 0.3){                // 旋转锯片：在路面中间来回滚
         ob.kind = 'saw'; ob.x = 0;
         ob.mv = {a: 0.42, s: 2.2 + R()*1.2, p: R()*6};
-      }else if(n >= 13 && roll < 0.5){          // 摆锤：从高处甩下来的大摆锤
+      }else if(n >= 15 && roll < 0.5){          // 摆锤：从高处甩下来的大摆锤
         ob.kind = 'pend'; ob.x = 0; ob.w = w*1.2;
         ob.mv = {a: 0.5, s: 1.6 + R()*1.2, p: R()*6};
-      }else if(n >= 17 && roll < 0.62){         // 双刺夹道：两侧尖刺往里夹
+      }else if(n >= 19 && roll < 0.62){         // 双刺夹道：两侧尖刺往里夹
         ob.kind = 'pike';
         ob.a = 0.34; ob.b = 0.16; ob.s = 2.0 + R()*1.5; ob.p = R()*6;
       }
@@ -712,14 +712,16 @@ function update(dt){
     px += (0 - px) * Math.min(1, dt*6); targetX = 0;
     if(pz < level.bossZ){ pz += 150 * level.speed * dt; }
     else{
-      if(!bossResult){ bossResult = 'fight'; addFloat('和守门王打起来啦！', true); sndGood(); }
+      if(level.fstep === undefined){            // 开场一次性定死步长 → 固定 ~1.8 秒线性打完
+        level.fstep = Math.max(1, Math.ceil(Math.min(crowd, level.boss) / 36));
+        bossResult = 'fight';
+        addFloat('和守门王打起来啦！', true); sndGood();
+      }
       fightAcc += dt;
-      const total = Math.min(crowd, level.boss);
-      const step = Math.max(1, Math.ceil(total / 36));      // 约 2 秒打完，人再多也不拖
       while(fightAcc > 0.05 && level.boss > 0 && crowd > 0){
         fightAcc -= 0.05;
-        level.boss = Math.max(0, level.boss - step);
-        crowd = Math.max(0, crowd - step);
+        level.boss = Math.max(0, level.boss - level.fstep);
+        crowd = Math.max(0, crowd - level.fstep);
         beep(280 + Math.random()*220, .05, 'square', .05);
       }
       $('hudCount').textContent = '👥 ' + crowd;
