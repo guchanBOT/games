@@ -47,6 +47,10 @@
     <div class="big" id="menuTitle">第 1 关</div>
     <button id="btnNextLv" class="ghost small" style="margin:0">▶</button>
   </div>
+  <div id="lvPicker" style="display:none;margin-top:4px;max-width:min(92vw,660px);text-align:center">
+    <div style="font-size:12px;font-weight:700;color:#5d4a1f;background:#ffe0a3;border-radius:8px;padding:2px 10px;display:inline-block;margin-bottom:4px">🧪 测试选关 1–60 · 橙色＝有新玩法的关 · 现在这关有描边</div>
+    <div id="lvChips" style="display:flex;flex-wrap:wrap;gap:5px;justify-content:center;max-height:110px;overflow-y:auto"></div>
+  </div>
   <div id="menuStars" class="stars"></div>
   <div class="tip">移动鼠标 / 滑动手指 / 按住 ← →<br>选更划算的门，带最多小人冲过终点！</div>
   <div id="menuCoins" style="font-size:28px;font-weight:900"></div>
@@ -559,16 +563,45 @@ $('btnReset').onclick = ()=>{
   showMenu();
 };
 
-$('btnPrevLv').onclick = ()=>{ if(curLevel > 1){ curLevel--; showMenu(); } };
-$('btnNextLv').onclick = ()=>{ if(curLevel < store.unlocked){ curLevel++; showMenu(); } };
+$('btnPrevLv').onclick = ()=>{
+  if(curLevel > 1){ curLevel--; showMenu(); }
+};
+$('btnNextLv').onclick = ()=>{
+  const m = TEST_BUILD ? 60 : store.unlocked;       // 测试版可一路选到 60 关
+  if(curLevel < m){ curLevel++; showMenu(); }
+};
+
+/* 有新玩法上场的关卡（橙色显示，方便测试时直接挑） */
+const LV_MILESTONE = new Set([3, 5, 8, 9, 10, 12, 14, 15, 18, 19, 20, 22, 26]);
+function buildPicker(){                            // 测试版选关格子 1–60
+  const box = $('lvChips'); box.innerHTML = '';
+  for(let i = 1; i <= 60; i++){
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.textContent = i;
+    const mil = LV_MILESTONE.has(i);
+    b.style.cssText = 'min-width:30px;height:28px;margin:0;padding:0 3px;font-size:13px;' +
+      'font-weight:700;border-radius:8px;cursor:pointer;box-shadow:none;' +
+      'background:' + (mil ? '#ffb300' : '#ffffff') + ';' +
+      'color:' + (mil ? '#5d3800' : '#2d2a26') + ';';
+    if(curLevel === i){ b.style.border = '3px solid #e64a19'; b.style.transform = 'scale(1.15)'; }
+    else{ b.style.border = '2px solid #e0d6c3'; }
+    b.onclick = () => { curLevel = i; sndGood(); showMenu(); };
+    box.appendChild(b);
+  }
+}
 
 function showMenu(){
   if(remainSec() <= 0){ showLock(); return; }
   state = 'menu';
   level = genLevel(curLevel, store.upLvl());
+  const lvMax = TEST_BUILD ? 60 : store.unlocked;   // 测试版不卡解锁，最多选到 60
   $('menuTitle').textContent = (level.bonus ? '👑 Boss 关 · ' : '') + '第 ' + curLevel + ' 关';
   $('btnPrevLv').disabled = curLevel <= 1;
-  $('btnNextLv').disabled = curLevel >= store.unlocked;
+  $('btnNextLv').disabled = curLevel >= lvMax;
+  const pk = $('lvPicker');
+  if(TEST_BUILD){ pk.style.display = ''; buildPicker(); }
+  else pk.style.display = 'none';
   const s = store.stars(curLevel);
   $('menuStars').textContent = s ? '⭐'.repeat(s) : '';
   refreshShop();
@@ -639,7 +672,10 @@ function endLevel(fail){
 }
 $('btnStart').onclick = startLevel;
 $('btnRetry').onclick = startLevel;
-$('btnNext').onclick = ()=>{ curLevel = Math.min(store.unlocked, curLevel + 1); showMenu(); };
+$('btnNext').onclick = ()=>{
+  const m = TEST_BUILD ? 60 : store.unlocked;
+  curLevel = Math.min(m, curLevel + 1); showMenu();
+};
 
 function spawnConfetti(){
   for(let i=0;i<50;i++) confetti.push({
