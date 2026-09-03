@@ -244,17 +244,19 @@ function genLevel(n, up){
   const decos = [];
   for(let i=0; i<Math.ceil((finishZ+200)/45); i++)
     decos.push({z: i*45 + R()*25, side:(R()<0.5?-1:1)*(1.25+R()*0.9), k:R()});
-  // 关底“守门大王”：约等于你的一半人数，靠人多硬撞；赢了会互耗掉一部分人
-  const boss = Math.min(300, Math.max(8, Math.round(e * 0.5)));
+  // 关底布局：跑道结束 → 上一座擂台(守门王站中间) → 打赢后再拉开一段才到 ×台阶
+  const bossZ = finishZ + 46;                    // 擂台中心
+  const stairZ0 = finishZ + 150;                 // 登塔台阶，和擂台明显分开
+  const boss = Math.min(300, Math.max(8, Math.round(e * 0.5)));   // ≈你的一半人数
   // ×台阶门槛按“撞完守门王还剩多少”来标：
   // 把预期人数 e 大致攒到的，战后剩 e−boss≈boss，正好够上顶台 ×5
   const stairs = [];
   for(let j=1; j<=5; j++)
     stairs.push({mult: j, need: Math.round(boss * (j-1) / 4)});
-  return {n, start, events, finishZ, length: finishZ + 190, theme, decos,
+  return {n, start, events, finishZ, length: stairZ0 + 220, theme, decos,
           speed: d.speed, par: e, bonus: d.bonus, stairs,
-          stairZ0: finishZ + 14, stairT: 26,
-          boss, bossMax: boss, bossZ: finishZ + 6};
+          stairZ0, stairT: 26,
+          boss, bossMax: boss, bossZ};
 }
 
 /* ================= 主题 ================= */
@@ -760,6 +762,31 @@ function drawBoss(d){
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(bs, x, by + 1);
 }
+function drawArena(){                       // 守门王的擂台：椭圆形台面 + 四角桩
+  const zc = level.bossZ, d = zc - pz;
+  if(d > VIEW + 30 || d < -100) return;
+  const p = persp(d), y = SY(d), xc = SX(0, p);
+  const rx = Math.max(10, 0.7 * W * 0.42 * p);        // 台面半宽 ≈ 路的 0.7
+  const ry = rx * 0.15;
+  ctx.fillStyle = 'rgba(0,0,0,.16)';                  // 抬起的影子
+  ctx.beginPath(); ctx.ellipse(xc, y + ry*0.35, rx, ry, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = 'rgba(150,110,70,.38)';             // 木台面
+  ctx.beginPath(); ctx.ellipse(xc, y, rx, ry, 0, 0, 7); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.45)'; ctx.lineWidth = Math.max(1, 2*p);
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(90,60,20,.5)';
+  ctx.beginPath(); ctx.ellipse(xc, y, rx*0.7, ry*0.7, 0, 0, 7); ctx.stroke();
+  // 四角矮桩（金顶）
+  const hp = 40*p, wp = Math.max(2, 5*p);
+  ctx.fillStyle = 'rgba(120,90,40,.95)';
+  for(const [ax, ay] of [[-1,-1],[1,-1],[-1,1],[1,1]]){
+    const px = xc + ax*rx, py = y + ay*ry;
+    ctx.fillRect(px - wp/2, py - hp, wp, hp);
+    ctx.fillStyle = 'rgba(255,205,90,.95)';
+    ctx.beginPath(); ctx.arc(px, py - hp, wp*0.75, 0, 7); ctx.fill();
+    ctx.fillStyle = 'rgba(120,90,40,.95)';
+  }
+}
 function drawStairs(){
   // 五级台阶一级级往上升：前立面(暗金)+受光台面，站上去越高级 × 倍数越大
   const T = level.stairT, R = 26, s0 = level.stairZ0;
@@ -871,6 +898,7 @@ function draw(){
     if(d > -30 && d < VIEW) items.push({d, ev}); }
   items.sort((a,b) => b.d - a.d);
   drawStairs();
+  drawArena();
   if(level.boss > 0){ const bd = level.bossZ - pz; if(bd > -30 && bd < VIEW) drawBoss(bd); }
   for(const it of items){
     if(it.de) drawDeco(it.de, it.d, th);
