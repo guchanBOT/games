@@ -176,6 +176,13 @@
     }
   })();
 
+  // 一次性旧档重置：金币/最高分/每日时长 的测试数据作废，只清一次（云存档功能接管前保持干净）
+  if (store.getItem('__reset2048') !== '1') {
+    store.setItem('best2048', '0');
+    store.setItem('coins2048', '0');
+    store.setItem('t2048secs', '0');
+    store.setItem('__reset2048', '1');
+  }
   var best = parseInt(store.getItem('best2048') || '0', 10);
   bestEl.textContent = best;
   var coins = parseInt(store.getItem('coins2048') || '0', 10);

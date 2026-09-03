@@ -39,7 +39,7 @@
 </head>
 <body>
 <div id="game"><canvas id="cv"></canvas></div>
-<div class="hud"><div id="hudLevel">第 1 关</div><div id="hudCoin"></div><div id="hudTime">⏱ 30 分钟</div><div id="hudCount">👥 5</div></div>
+<div class="hud" id="hud"><div id="hudLevel">第 1 关</div><div id="hudCoin"></div><div id="hudTime">⏱ 30 分钟</div><div id="hudCount">👥 5</div></div>
 
 <!-- 局内小按钮：随时回开头 / 开关背景音乐（菜单界面会被遮住） -->
 <div id="ctrl" style="position:fixed;right:12px;top:calc(58px + env(safe-area-inset-top));display:flex;gap:6px;z-index:6">
@@ -392,6 +392,7 @@ function showLock(){
   $('menu').classList.add('hidden');
   $('result').classList.add('hidden');
   $('lock').classList.remove('hidden');
+  $('hud').style.visibility = 'hidden';
 }
 
 const store = {
@@ -608,6 +609,7 @@ function showMenu(){
   refreshShop();
   $('menu').classList.remove('hidden');
   $('result').classList.add('hidden');
+  $('hud').style.visibility = 'hidden';
   $('hudLevel').textContent = '第 ' + curLevel + ' 关';
   $('hudCount').textContent = '👥 ' + level.start;
   $('hudCoin').innerHTML = DORA_HTML() + ' ' + store.coins();
@@ -621,6 +623,7 @@ function startLevel(){
   state = 'run';
   $('menu').classList.add('hidden');
   $('result').classList.add('hidden');
+  $('hud').style.visibility = 'visible';
   $('hudLevel').textContent = '第 ' + curLevel + ' 关';
   $('hudCount').textContent = '👥 ' + crowd;
   $('hudCoin').innerHTML = DORA_HTML() + ' ' + store.coins();
@@ -670,6 +673,7 @@ function endLevel(fail){
   $('btnRetry').textContent = fail ? '再试一次' : '再玩一次';
   if(lockPending){ showLock(); return; }
   $('result').classList.remove('hidden');
+  $('hud').style.visibility = 'hidden';
 }
 $('btnStart').onclick = startLevel;
 $('btnRetry').onclick = startLevel;
