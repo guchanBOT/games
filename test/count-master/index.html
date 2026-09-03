@@ -57,6 +57,7 @@
     <div id="palette" style="display:flex;gap:10px;justify-content:center;align-items:center"></div>
     <div id="palHint" style="font-size:12px;color:#a89a8c;margin-top:6px"></div>
   </div>
+  <button id="btnReset" class="ghost small" style="opacity:.55;margin-top:8px">🗑 清空进度</button>
 </div>
 
 <div id="result" class="overlay hidden">
@@ -430,6 +431,26 @@ $('btnUndo').onclick = ()=>{
   if(lvl <= 0) return;
   store.addCoins(20 * lvl); store.setUpLvl(lvl - 1);   // 上一档买的时候花了 20*lvl
   sndGood(); refreshShop();
+};
+
+/* 清空进度（关卡/星星/金币/升级/颜色都回到最初；保留当天 30 分钟计时） */
+let resetArm = false;
+$('btnReset').onclick = ()=>{
+  if(!resetArm){
+    resetArm = true; sndBad();
+    $('btnReset').textContent = '再点一次确认清空';
+    setTimeout(()=>{ resetArm = false; $('btnReset').textContent = '🗑 清空进度'; }, 3000);
+    return;
+  }
+  for(let i = localStorage.length - 1; i >= 0; i--){
+    const k = localStorage.key(i);
+    if(k && k.indexOf('np_') === 0 && k.indexOf('np_time_') !== 0) localStorage.removeItem(k);
+  }
+  resetArm = false; sndGood();
+  $('btnReset').textContent = '已清空 ✅';
+  setTimeout(()=>{ $('btnReset').textContent = '🗑 清空进度'; }, 1500);
+  curLevel = 1;
+  showMenu();
 };
 
 $('btnPrevLv').onclick = ()=>{ if(curLevel > 1){ curLevel--; showMenu(); } };
