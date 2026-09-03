@@ -1,0 +1,787 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#7ec8f7">
+<title>数字跑酷</title>
+<style>
+  html,body{margin:0;height:100%;overflow:hidden;background:#7ec8f7;
+    font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
+    -webkit-user-select:none;user-select:none;touch-action:none}
+  #game{position:fixed;inset:0}
+  canvas{display:block;width:100%;height:100%}
+  .hud{position:fixed;top:calc(8px + env(safe-area-inset-top));left:0;right:0;
+    display:flex;justify-content:space-between;padding:0 16px;pointer-events:none;
+    color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.35);font-weight:800;font-size:20px}
+  .overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;background:rgba(20,30,50,.5);color:#fff;text-align:center;z-index:10}
+  .hidden{display:none!important}
+  button{font-size:22px;padding:14px 46px;border:none;border-radius:999px;
+    background:#ffb300;color:#5d3800;font-weight:800;box-shadow:0 4px 0 #c98a00;margin:10px}
+  button:active{transform:translateY(2px);box-shadow:0 2px 0 #c98a00}
+  button:disabled{opacity:.45}
+  button.small{font-size:16px;padding:10px 24px}
+  button.ghost{background:#eceff1;color:#37474f;box-shadow:0 4px 0 #b0bec5}
+  .big{font-size:36px;font-weight:800;margin-bottom:6px;text-shadow:0 2px 6px rgba(0,0,0,.4)}
+  .stars{font-size:46px;letter-spacing:10px;margin:10px 0;min-height:56px}
+  .tip{opacity:.9;margin-bottom:10px;font-size:16px}
+</style>
+</head>
+<body>
+<div id="game"><canvas id="cv"></canvas></div>
+<div class="hud"><div id="hudLevel">第 1 关</div><div id="hudCoin">🪙 0</div><div id="hudTime">⏱ 30 分钟</div><div id="hudCount">👥 5</div></div>
+
+<div id="lock" class="overlay hidden">
+  <div class="big">今天已经玩够 30 分钟啦</div>
+  <div class="tip">小眼睛要休息，明天再来吧！😊</div>
+</div>
+
+<div id="menu" class="overlay">
+  <div style="display:flex;align-items:center;gap:20px">
+    <button id="btnPrevLv" class="ghost small" style="margin:0">◀</button>
+    <div class="big" id="menuTitle">第 1 关</div>
+    <button id="btnNextLv" class="ghost small" style="margin:0">▶</button>
+  </div>
+  <div id="menuStars" class="stars"></div>
+  <div class="tip">移动鼠标 / 滑动手指 / 按住 ← →<br>选更划算的门，带最多小人冲过终点！</div>
+  <div id="menuCoins" style="font-size:20px;font-weight:800"></div>
+  <button id="btnStart">开 始</button>
+  <button id="btnUp" class="ghost"></button>
+  <button id="btnColor" class="ghost">🎨 换颜色</button>
+</div>
+
+<div id="result" class="overlay hidden">
+  <div class="big" id="resTitle">太棒了！</div>
+  <div class="stars" id="resStars"></div>
+  <div id="resInfo" style="font-size:20px;margin-bottom:6px"></div>
+  <button id="btnNext">下一关</button>
+  <button id="btnRetry" class="ghost">再玩一次</button>
+</div>
+
+<script>
+'use strict';
+/* ================= 基础 ================= */
+const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
+let W = 0, H = 0;
+function resize(){
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  W = window.innerWidth; H = window.innerHeight;
+  cv.width = W * dpr; cv.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+addEventListener('resize', resize); resize();
+
+if(!ctx.roundRect){
+  ctx.roundRect = function(x,y,w,h,r){ r=Math.min(r,w/2,h/2);
+    this.moveTo(x+r,y); this.arcTo(x+w,y,x+w,y+h,r); this.arcTo(x+w,y+h,x,y+h,r);
+    this.arcTo(x,y+h,x,y,r); this.arcTo(x,y,x+w,y,r); this.closePath(); };
+}
+
+/* 固定种子的随机数：同一关每次生成完全一样 */
+function mulberry32(a){ return function(){ a|=0; a=a+0x6D2B79F5|0;
+  let t=Math.imul(a^a>>>15,1|a); t=t+Math.imul(t^t>>>7,61|t)^t;
+  return ((t^t>>>14)>>>0)/4294967296; }; }
+
+/* ================= 音效（简单蜂鸣，无音频文件） ================= */
+let AC = null;
+function beep(f, dur, type, g){
+  try{
+    AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+    if(AC.state === 'suspended') AC.resume();
+    const o = AC.createOscillator(), gn = AC.createGain();
+    o.type = type || 'sine'; o.frequency.value = f;
+    gn.gain.setValueAtTime(g || 0.12, AC.currentTime);
+    gn.gain.exponentialRampToValueAtTime(0.001, AC.currentTime + (dur || 0.12));
+    o.connect(gn); gn.connect(AC.destination);
+    o.start(); o.stop(AC.currentTime + (dur || 0.12));
+  }catch(e){}
+}
+const sndGood = ()=>{ beep(620,.1,'triangle'); setTimeout(()=>beep(880,.12,'triangle'),70); };
+const sndBad  = ()=>beep(170,.25,'sawtooth',.1);
+const sndWin  = ()=>[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.15,'triangle'),i*110));
+
+/* ================= 关卡配方 ================= */
+function diffOf(n){
+  return {
+    maxAdd : Math.min(60, 14 + n*3),          // 加法数字上限
+    pairs  : Math.min(20, 8 + n),             // 门的对数
+    gap    : Math.max(130, 175 - n*2),        // 门间距（越小越难）
+    sub    : n >= 3,                          // 减法出现
+    mul    : n >= 5,                          // ×2 出现
+    mul3   : n >= 8,                          // ×3 出现
+    div    : n >= 10,                         // ÷2 出现
+    div3   : n >= 15,                         // ÷3 出现
+    trap   : n >= 12 ? 0.2 : 0,               // “两边都亏”陷阱对概率
+    rnd    : n >= 8 ? 0.15 : 0,               // “?”惊喜门概率
+    mv     : n >= 10,                         // 障碍会左右移动
+    obs    : n >= 4 ? Math.min(5, 1 + Math.floor(n/4)) : 0, // 障碍数量上限
+    obsDmg : 3 + Math.floor(n/3),
+    enemies: n >= 15 ? 2 : (n >= 7 ? 1 : 0),  // 敌方队伍数量
+    bonus  : n % 5 === 0,                     // 每 5 关一个奖励关（纯享福）
+    speed  : Math.min(1.35, 0.95 + n*0.02),
+  };
+}
+function applyOp(n, op){
+  if(op.t==='rnd'){                       // “?”门：碰了才知道
+    const r = Math.random();
+    if(r < 0.35) return n * 2;
+    if(r < 0.6)  return n + 20 + Math.floor(Math.random()*20);
+    if(r < 0.8)  return Math.max(1, Math.floor(n / 2));
+    return Math.max(1, n - (5 + Math.floor(Math.random()*10)));
+  }
+  if(op.t==='add') return n + op.v;
+  if(op.t==='sub') return n - op.v;
+  if(op.t==='mul') return n * op.v;
+  return Math.floor(n / op.v);
+}
+function opLabel(op){
+  return op.t==='rnd' ? '?' :
+         op.t==='add' ? '+'+op.v : op.t==='sub' ? '−'+op.v :
+         op.t==='mul' ? '×'+op.v : '÷'+op.v;
+}
+const isBad = op => op.t==='sub' || op.t==='div';
+
+function genLevel(n, up){
+  const d = diffOf(n), R = mulberry32(n*7919 + 13);
+  const ri = (a,b)=> a + Math.floor(R()*(b-a+1));
+  const start = 4 + ri(0,3) + (up || 0);
+  let e = start;                              // 预期人数（按选对门估算）
+  const events = [];
+  let z = 320;
+  let enemiesLeft = d.enemies;
+  let obsLeft = d.obs;
+
+  function randOp(positiveOnly){
+    const pool = ['add'];
+    if(!positiveOnly){
+      if(d.sub && e >= 3) pool.push('sub');
+      if(d.div && e >= 4 && e % 2 === 0) pool.push('div');
+      if(d.div3 && e >= 9 && e % 3 === 0) pool.push('div3');
+    }
+    if(d.mul) pool.push('mul');
+    if(d.mul3) pool.push('mul3');
+    const t = pool[Math.floor(R()*pool.length)];
+    if(t==='add')  return {t:'add', v: ri(5, d.maxAdd)};
+    if(t==='sub')  return {t:'sub', v: Math.min(e-1, ri(3, Math.max(4, Math.floor(d.maxAdd*0.7))))};
+    if(t==='mul')  return {t:'mul', v: 2};
+    if(t==='mul3') return {t:'mul', v: 3};
+    return {t:'div', v: t==='div3' ? 3 : 2};
+  }
+
+  function makePair(){
+    const bothGood = d.bonus || R() < 0.18;
+    const wantTrap = !d.bonus && d.trap > 0 && R() < d.trap && e >= 6;
+    // “?”惊喜门：一侧内容未知，另一侧是已知数
+    if(!d.bonus && d.rnd > 0 && R() < d.rnd){
+      const known = {t:'add', v: ri(8, d.maxAdd)};
+      const rndSide = R() < 0.5;
+      return rndSide ? [{t:'rnd'}, known] : [known, {t:'rnd'}];
+    }
+    for(let tries=0; tries<30; tries++){
+      let a, b;
+      if(wantTrap){                            // 陷阱对：两边都亏，选亏得少的
+        a = {t:'sub', v: ri(2, Math.max(3, Math.floor(e*0.4)))};
+        b = (d.div && e%2===0 && R()<0.5) ? {t:'div', v:2}
+            : {t:'sub', v: ri(Math.floor(e*0.5), Math.max(Math.floor(e*0.5)+1, e-1))};
+      }else{
+        a = randOp(bothGood); b = randOp(bothGood);
+      }
+      const ra = applyOp(e,a), rb = applyOp(e,b);
+      if(ra < 1 || rb < 1 || ra === rb) continue;
+      const hi = Math.max(ra,rb), lo = Math.min(ra,rb);
+      if(hi >= lo*1.3 || hi - lo >= 10) return R()<0.5 ? [a,b] : [b,a];
+    }
+    const v1 = ri(6, Math.floor(d.maxAdd*0.5)), v2 = ri(v1+10, d.maxAdd+10); // 兜底：大小加法
+    return R()<0.5 ? [{t:'add',v:v2},{t:'add',v:v1}] : [{t:'add',v:v1},{t:'add',v:v2}];
+  }
+
+  for(let i=0; i<d.pairs; i++){
+    const pair = makePair();
+    events.push({kind:'gate', z, pair, done:false});
+    // 预期人数按“选得好”估算（?门按 +20 估），上限 999
+    const est = op => op.t==='rnd' ? e + 20 : applyOp(e, op);
+    e = Math.min(999, Math.max(est(pair[0]), est(pair[1])));
+    const seg = d.gap + ri(-15, 25);
+    z += seg;
+    // 障碍和敌人每段最多出一个（else if），贴一边放、另一侧永远留宽路，
+    // 放在两段门的中间，不挤门也不互相重叠
+    if(!d.bonus && i >= 1 && i < d.pairs-1 && obsLeft > 0 && R() < 0.5){
+      const w = 0.3 + R()*0.15;
+      const side = R() < 0.5 ? -1 : 1;
+      const ob = {kind:'obs', z: z - seg*0.5,
+                  x: side * (0.95 - w/2), w, dmg: d.obsDmg, done:false};
+      if(d.mv && R() < 0.5) ob.mv = {a: 0.2 + R()*0.15, s: 1.5 + R()*1.5, p: R()*6};
+      events.push(ob);
+      obsLeft--;
+    }
+    // 敌方队伍：人数 > 它才能撞赢，赢了损失相等人数；只占半边，可以绕开
+    else if(!d.bonus && i >= 2 && enemiesLeft > 0 && R() < 0.6){
+      const en = Math.max(3, Math.floor(e * (0.5 + R()*0.4)));
+      events.push({kind:'enemy', z: z - seg*0.5, x:(R()<0.5?-1:1)*0.45, n: en, done:false});
+      e = Math.max(1, e - en);
+      enemiesLeft--;
+    }
+    // 金币串：只撒在没有障碍也没有敌人的路段
+    else if(i < d.pairs-1 && R() < 0.55){
+      const cx = (R()*2-1) * 0.5, nC = 5;
+      for(let k=0; k<nC; k++)
+        events.push({kind:'coin', z: z - seg*0.8 + k*11,
+                     x: Math.max(-0.8, Math.min(0.8, cx + Math.sin(k*0.9)*0.15)), taken:false});
+    }
+  }
+  const finishZ = z + 60;
+  const theme = THEMES[Math.floor((n-1)/5) % THEMES.length];
+  const decos = [];
+  for(let i=0; i<Math.ceil((finishZ+200)/45); i++)
+    decos.push({z: i*45 + R()*25, side:(R()<0.5?-1:1)*(1.25+R()*0.9), k:R()});
+  // 终点台阶：站上第 j 级需要 need 人，得分 = 人数 × 倍数
+  const stairs = [];
+  for(let j=1; j<=5; j++)
+    stairs.push({mult: j, need: Math.round(e * (j-1) / 5)});
+  // Boss 关（每 5 关）：关底打大个子，打赢奖励 20 金币；血量封顶 200
+  const boss = d.bonus ? Math.min(200, Math.max(10, Math.round(e * 0.8))) : 0;
+  return {n, start, events, finishZ, length: finishZ + (boss ? 160 : 220), theme, decos,
+          speed: d.speed, par: e, bonus: d.bonus, stairs, boss, bossMax: boss};
+}
+
+/* ================= 主题 ================= */
+const THEMES = [
+  {sky:['#7ec8f7','#d8f1ff'], ground:'#79c46b', track:'#f7e9c3', stripe:'#ecd9a8',
+   crowd:'#ff7043', deco:'tree'},
+  {sky:['#f7c873','#fdeec8'], ground:'#e0b25e', track:'#fff3d6', stripe:'#eed9a8',
+   crowd:'#42a5f5', deco:'cactus'},
+  {sky:['#a5d8f0','#eef9ff'], ground:'#eef6fb', track:'#cfdfec', stripe:'#bccfdf',
+   crowd:'#ef5350', deco:'snow'},
+  {sky:['#1a2350','#3b4a8c'], ground:'#2c3560', track:'#4a5588', stripe:'#3d4673',
+   crowd:'#ffca28', deco:'star'},
+];
+
+/* ================= 伪 3D 投影 ================= */
+const VIEW = 520;
+const persp = d => 1 / (1 + Math.max(d, -30) * 0.011);
+const SX = (x,p) => W/2 + x * W * 0.42 * p;
+const SY = d => { const p = persp(d); return H*0.30 + (H*1.02 - H*0.30) * p; };
+
+/* ================= 游戏状态 ================= */
+let level = null, state = 'menu';   // menu | run | finish | over | locked
+let crowd = 5, px = 0, targetX = 0, pz = 0;
+let floats = [], confetti = [];
+let finT = 0, time = 0;
+
+/* ================= 每日限时（30 分钟） ================= */
+const DAY_LIMIT = 30 * 60;          // 秒
+function todayStr(){
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0')
+       + '-' + String(d.getDate()).padStart(2,'0');
+}
+const timeKey = () => 'np_time_' + todayStr();
+let usedSec = +(localStorage.getItem(timeKey()) || 0);
+let lastSave = 0, lockPending = false, lastShownMin = -1;
+function remainSec(){ return Math.max(0, DAY_LIMIT - usedSec); }
+function tickTimer(dt){
+  if(state === 'locked') return;
+  usedSec += dt;
+  if(time - lastSave > 2){ lastSave = time; localStorage.setItem(timeKey(), usedSec.toFixed(0)); }
+  const m = Math.ceil(remainSec() / 60);
+  if(m !== lastShownMin){
+    lastShownMin = m;
+    $('hudTime').textContent = '⏱ ' + m + ' 分钟';
+  }
+  if(remainSec() <= 0){
+    if(state === 'run' || state === 'finish') lockPending = true;  // 让本局跑完再锁
+    else showLock();
+  }
+}
+function showLock(){
+  state = 'locked';
+  $('menu').classList.add('hidden');
+  $('result').classList.add('hidden');
+  $('lock').classList.remove('hidden');
+}
+
+const store = {
+  get unlocked(){ return +(localStorage.getItem('np_unlock') || 1); },
+  set unlocked(v){ localStorage.setItem('np_unlock', v); },
+  stars(n){ return +(localStorage.getItem('np_star_'+n) || 0); },
+  setStars(n,s){ if(s > this.stars(n)) localStorage.setItem('np_star_'+n, s); },
+  coins(){ return +(localStorage.getItem('np_coins') || 0); },
+  addCoins(v){ localStorage.setItem('np_coins', Math.max(0, this.coins() + v)); },
+  upLvl(){ return +(localStorage.getItem('np_upstart') || 0); },
+  setUpLvl(v){ localStorage.setItem('np_upstart', v); },
+  color(){ return +(localStorage.getItem('np_color') || 0); },
+  setColor(v){ localStorage.setItem('np_color', v); },
+};
+/* 小人颜色皮肤：每攒 6 颗星解锁一个 */
+const COLORS = ['#ff7043','#42a5f5','#66bb6a','#ab47bc','#ffca28','#ec407a'];
+function totalStars(){
+  let s = 0;
+  for(let n = 1; n < store.unlocked; n++) s += store.stars(n);
+  return s;
+}
+const unlockedColors = () => Math.min(COLORS.length, 1 + Math.floor(totalStars()/6));
+const crowdColor = () => COLORS[store.color() % unlockedColors()];
+let curLevel = store.unlocked;
+let runCoins = 0, bossResult = null, fightAcc = 0;
+
+/* ================= 输入 ================= */
+let ptrX = null;
+cv.addEventListener('pointerdown', ev => { ptrX = ev.clientX; });
+addEventListener('pointermove', ev => {
+  // 鼠标：不用按住，移动即控制（触控板/鼠标友好）
+  if(ev.pointerType === 'mouse'){
+    targetX = Math.max(-0.86, Math.min(0.86, (ev.clientX - W/2) / (W*0.42)));
+    return;
+  }
+  // 触屏：按住拖动
+  if(ptrX === null) return;
+  targetX += (ev.clientX - ptrX) / W * 2.4;
+  targetX = Math.max(-0.86, Math.min(0.86, targetX));
+  ptrX = ev.clientX;
+});
+addEventListener('pointerup', ()=> ptrX = null);
+addEventListener('pointercancel', ()=> ptrX = null);
+const keys = {};
+addEventListener('keydown', ev => {
+  keys[ev.key] = true;
+  if(ev.key === 'Enter' || ev.key === ' '){          // 回车/空格 = 点开始按钮
+    if(!$('menu').classList.contains('hidden')) startLevel();
+    else if(!$('result').classList.contains('hidden')){
+      if(!$('btnNext').classList.contains('hidden')) $('btnNext').onclick();
+      else startLevel();
+    }
+    ev.preventDefault();
+  }
+});
+addEventListener('keyup', ev => keys[ev.key] = false);
+document.addEventListener('touchmove', e => e.preventDefault(), {passive:false});
+
+/* ================= 流程 ================= */
+const $ = id => document.getElementById(id);
+function refreshShop(){
+  $('menuCoins').textContent = '🪙 ' + store.coins() + '　⭐ ' + totalStars();
+  const cost = 20 * (store.upLvl() + 1);
+  $('btnUp').textContent = '👥 开局人数 +1（' + cost + '🪙，已 +' + store.upLvl() + '）';
+  $('btnUp').className = 'ghost small';
+  $('btnUp').disabled = store.coins() < cost;
+  $('btnColor').className = 'ghost small';
+  $('btnColor').textContent = '🎨 换颜色（已解锁 ' + unlockedColors() + '/' + COLORS.length + '）';
+}
+$('btnUp').onclick = ()=>{
+  const cost = 20 * (store.upLvl() + 1);
+  if(store.coins() < cost) return;
+  store.addCoins(-cost); store.setUpLvl(store.upLvl() + 1);
+  sndGood(); refreshShop();
+};
+$('btnColor').onclick = ()=>{
+  store.setColor((store.color() + 1) % unlockedColors());
+  sndGood(); refreshShop();
+};
+
+$('btnPrevLv').onclick = ()=>{ if(curLevel > 1){ curLevel--; showMenu(); } };
+$('btnNextLv').onclick = ()=>{ if(curLevel < store.unlocked){ curLevel++; showMenu(); } };
+
+function showMenu(){
+  if(remainSec() <= 0){ showLock(); return; }
+  state = 'menu';
+  level = genLevel(curLevel, store.upLvl());
+  $('menuTitle').textContent = (level.bonus ? '👑 Boss 关 · ' : '') + '第 ' + curLevel + ' 关';
+  $('btnPrevLv').disabled = curLevel <= 1;
+  $('btnNextLv').disabled = curLevel >= store.unlocked;
+  const s = store.stars(curLevel);
+  $('menuStars').textContent = s ? '⭐'.repeat(s) : '';
+  refreshShop();
+  $('menu').classList.remove('hidden');
+  $('result').classList.add('hidden');
+  $('hudLevel').textContent = '第 ' + curLevel + ' 关';
+  $('hudCount').textContent = '👥 ' + level.start;
+  $('hudCoin').textContent = '🪙 ' + store.coins();
+}
+function startLevel(){
+  if(remainSec() <= 0){ showLock(); return; }
+  level = genLevel(curLevel, store.upLvl());
+  crowd = level.start; px = 0; targetX = 0; pz = 0;
+  floats = []; confetti = []; finT = 0;
+  runCoins = 0; bossResult = null; fightAcc = 0;
+  state = 'run';
+  $('menu').classList.add('hidden');
+  $('result').classList.add('hidden');
+  $('hudLevel').textContent = '第 ' + curLevel + ' 关';
+  $('hudCount').textContent = '👥 ' + crowd;
+  $('hudCoin').textContent = '🪙 ' + store.coins();
+}
+function endLevel(fail){
+  state = 'over';
+  const isBoss = !!level.bossMax;
+  let stars, title, info;
+  if(fail){
+    stars = 0; title = '哎呀，小人都没有啦'; info = '别灰心，再试一次！';
+  }else if(isBoss){
+    if(bossResult === 'win'){
+      stars = 3; store.addCoins(20);
+      title = '击败 Boss！👑';
+      info = '剩 ' + crowd + ' 人 · 奖励 20🪙' + (runCoins ? ' · 捡到 ' + runCoins + '🪙' : '');
+    }else{
+      stars = 1;
+      title = '差一点点！';
+      info = 'Boss 还剩 ' + level.boss + ' 人 · 下次攒更多人再来';
+    }
+  }else{
+    let stair = 0;
+    for(const s of level.stairs) if(crowd >= s.need) stair = s.mult;
+    const score = crowd * Math.max(1, stair);
+    stars = stair >= 5 ? 3 : stair >= 3 ? 2 : 1;
+    title = ['','不错哦！','太棒了！','完美！'][stars];
+    info = crowd + ' 人 × ' + Math.max(1,stair) + ' 倍 = ' + score + ' 分'
+         + (runCoins ? ' · 捡到 ' + runCoins + '🪙' : '');
+  }
+  if(fail){
+    sndBad();
+    $('resTitle').textContent = title;
+    $('resStars').textContent = '';
+    $('resInfo').textContent = info;
+    $('btnNext').classList.add('hidden');
+  }else{
+    sndWin();
+    store.setStars(curLevel, stars);
+    store.unlocked = Math.max(store.unlocked, curLevel + 1);
+    $('resTitle').textContent = title;
+    $('resStars').textContent = '⭐'.repeat(stars) + '☆'.repeat(3-stars);
+    $('resInfo').textContent = info;
+    $('btnNext').classList.remove('hidden');
+    if(stars === 3) spawnConfetti();
+  }
+  $('hudCoin').textContent = '🪙 ' + store.coins();
+  $('btnRetry').textContent = fail ? '再试一次' : '再玩一次';
+  if(lockPending){ showLock(); return; }
+  $('result').classList.remove('hidden');
+}
+$('btnStart').onclick = startLevel;
+$('btnRetry').onclick = startLevel;
+$('btnNext').onclick = ()=>{ curLevel = Math.min(store.unlocked, curLevel + 1); showMenu(); };
+
+function spawnConfetti(){
+  for(let i=0;i<50;i++) confetti.push({
+    x: Math.random()*W, y: -20 - Math.random()*H*0.4,
+    vy: 120+Math.random()*160, vx:(Math.random()-0.5)*80,
+    c:'hsl('+Math.floor(Math.random()*360)+',90%,60%)', s:6+Math.random()*6, r:Math.random()*3
+  });
+}
+function addFloat(txt, good){
+  floats.push({txt, good, age: 0});
+}
+
+/* ================= 更新 ================= */
+function update(dt){
+  time += dt;
+  tickTimer(dt);
+  if(state === 'run'){
+    // 方向键按住连续移动
+    if(keys['ArrowLeft'])  targetX = Math.max(-0.86, targetX - 2.2*dt);
+    if(keys['ArrowRight']) targetX = Math.min( 0.86, targetX + 2.2*dt);
+    pz += 150 * level.speed * dt;
+    px += (targetX - px) * Math.min(1, dt*10);
+    for(const ev of level.events){
+      if(ev.done || ev.z > pz) continue;
+      ev.done = true;
+      if(ev.kind === 'gate'){
+        const op = ev.pair[px < 0 ? 0 : 1];
+        const old = crowd;
+        crowd = Math.max(0, Math.min(999, applyOp(crowd, op)));
+        const delta = crowd - old, good = delta >= 0;
+        addFloat((good ? '+' : '') + delta + (good ? '!' : '…'), good);
+        good ? sndGood() : sndBad();
+        if(crowd <= 0){ endLevel(true); return; }
+      }else if(ev.kind === 'coin'){
+        if(Math.abs(px - ev.x) < 0.22){
+          ev.taken = true; runCoins++; store.addCoins(1);
+          addFloat('+1🪙', true);
+          beep(1200, .06, 'sine', .07);
+          $('hudCoin').textContent = '🪙 ' + store.coins();
+        }
+      }else if(ev.kind === 'enemy'){
+        if(Math.abs(px - ev.x) < 0.45){
+          if(crowd > ev.n){                       // 撞赢：损失对方人数
+            crowd -= ev.n;
+            addFloat('−' + ev.n + ' 击败!', true);
+            sndGood();
+          }else{                                  // 人不够：被撞散
+            crowd = 0;
+            endLevel(true); return;
+          }
+        }
+      }else{ // 障碍：撞上才减人（可能会左右移动）
+        const ox = ev.mv ? ev.x + Math.sin(time*ev.mv.s + ev.mv.p)*ev.mv.a : ev.x;
+        if(Math.abs(px - ox) < ev.w/2 + 0.1){
+          crowd = Math.max(0, crowd - ev.dmg);
+          addFloat('−' + ev.dmg + '…', false);
+          sndBad();
+          if(crowd <= 0){ endLevel(true); return; }
+        }
+      }
+      $('hudCount').textContent = '👥 ' + crowd;
+    }
+    if(pz >= level.finishZ){
+      state = level.boss ? 'fight' : 'finish';
+      finT = 0;
+    }
+  }
+  else if(state === 'fight'){                   // Boss 战：小人一个个扑上去
+    finT += dt;
+    px += (0 - px) * Math.min(1, dt*6); targetX = 0;
+    const bz = level.finishZ + 40;
+    if(pz < bz){ pz += 150 * level.speed * dt; }
+    else{
+      fightAcc += dt;
+      const step = Math.max(1, Math.ceil(level.bossMax / 60));  // 血量再大也 3~4 秒打完
+      while(fightAcc > 0.06 && level.boss > 0 && crowd > 0){
+        fightAcc -= 0.06;
+        level.boss = Math.max(0, level.boss - step);
+        crowd = Math.max(0, crowd - step);
+        beep(280 + Math.random()*220, .05, 'square', .05);
+      }
+      $('hudCount').textContent = '👥 ' + crowd;
+      if(level.boss <= 0){ bossResult = 'win'; endLevel(false); }
+      else if(crowd <= 0){ bossResult = 'lose'; endLevel(false); }
+    }
+  }
+  else if(state === 'finish'){
+    finT += dt;
+    px += (0 - px) * Math.min(1, dt*6); targetX = 0;
+    // 能站上的最高台阶：人数 >= 该级门槛
+    let stair = 0;
+    for(const s of level.stairs) if(crowd >= s.need) stair = s.mult;
+    const stopZ = level.finishZ + 20 + (stair - 0.5) * 30;
+    if(pz < stopZ) pz += 150 * level.speed * dt;
+    else if(finT > 0.4) endLevel(false);
+  }
+  floats = floats.filter(f => (f.age += dt) < 1.3);
+  for(const c of confetti){ c.y += c.vy*dt; c.x += c.vx*dt; c.r += dt*4; }
+  confetti = confetti.filter(c => c.y < H + 30);
+}
+
+/* ================= 绘制 ================= */
+function drawFigure(x, y, h, phase, color){
+  const swing = Math.sin(time*14 + phase);
+  const hipY = y - h*0.45, shoY = y - h*0.68, headR = h*0.16;
+  ctx.strokeStyle = color; ctx.lineWidth = Math.max(1.5, h*0.07); ctx.lineCap = 'round';
+  ctx.beginPath();
+  ctx.moveTo(x, hipY); ctx.lineTo(x, shoY);                          // 身子
+  ctx.moveTo(x, hipY); ctx.lineTo(x + swing*h*0.2, y);               // 腿 1
+  ctx.moveTo(x, hipY); ctx.lineTo(x - swing*h*0.2, y);               // 腿 2
+  ctx.moveTo(x, shoY); ctx.lineTo(x - swing*h*0.16, y - h*0.38);     // 臂 1
+  ctx.moveTo(x, shoY); ctx.lineTo(x + swing*h*0.16, y - h*0.38);     // 臂 2
+  ctx.stroke();
+  ctx.fillStyle = color;
+  ctx.beginPath(); ctx.arc(x, y - h*0.85, headR, 0, 7); ctx.fill();  // 头
+}
+function drawDeco(de, d, theme){
+  const p = persp(d), x = SX(de.side, p), y = SY(d), s = p * 46;
+  if(s < 2) return;
+  if(theme.deco === 'tree'){
+    ctx.fillStyle = '#8d5a2b'; ctx.fillRect(x - s*0.08, y - s*0.5, s*0.16, s*0.5);
+    ctx.fillStyle = '#3e9e4f';
+    ctx.beginPath(); ctx.moveTo(x, y - s*1.25); ctx.lineTo(x + s*0.55, y - s*0.4);
+    ctx.lineTo(x - s*0.55, y - s*0.4); ctx.closePath(); ctx.fill();
+  }else if(theme.deco === 'cactus'){
+    ctx.fillStyle = '#4caf50';
+    ctx.beginPath(); ctx.roundRect(x - s*0.14, y - s*1.1, s*0.28, s*1.1, s*0.14); ctx.fill();
+    ctx.beginPath(); ctx.roundRect(x + s*0.12, y - s*0.85, s*0.35, s*0.16, s*0.08); ctx.fill();
+  }else if(theme.deco === 'snow'){
+    ctx.fillStyle = '#ffffff';
+    ctx.beginPath(); ctx.arc(x, y - s*0.3, s*0.34, 0, 7); ctx.fill();
+    ctx.beginPath(); ctx.arc(x, y - s*0.75, s*0.24, 0, 7); ctx.fill();
+  }
+}
+function drawGate(ev, d){
+  const p = persp(d), y = SY(d);
+  const hgt = 130 * p;
+  for(let i=0; i<2; i++){
+    const x0 = SX(i===0 ? -0.98 : 0.04, p), x1 = SX(i===0 ? -0.04 : 0.98, p);
+    ctx.fillStyle = 'rgba(61,155,233,.88)';
+    ctx.beginPath(); ctx.roundRect(x0, y - hgt, x1 - x0, hgt, 8*p); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.9)'; ctx.lineWidth = Math.max(1, 2.5*p);
+    ctx.stroke();
+    ctx.fillStyle = '#fff';
+    ctx.font = '800 ' + Math.max(10, 46*p) + 'px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(opLabel(ev.pair[i]), (x0+x1)/2, y - hgt/2);
+  }
+}
+function drawObs(ev, d){
+  const p = persp(d), y = SY(d);
+  const ox = ev.mv ? ev.x + Math.sin(time*ev.mv.s + ev.mv.p)*ev.mv.a : ev.x;
+  const x0 = SX(ox - ev.w/2, p), x1 = SX(ox + ev.w/2, p), hgt = 46*p;
+  ctx.fillStyle = '#e53935';
+  ctx.beginPath(); ctx.roundRect(x0, y - hgt, x1 - x0, hgt, 5*p); ctx.fill();
+  ctx.fillStyle = '#b71c1c';                                   // 尖刺
+  const n = 3, step = (x1 - x0) / n;
+  for(let i=0;i<n;i++){
+    ctx.beginPath();
+    ctx.moveTo(x0 + i*step, y - hgt);
+    ctx.lineTo(x0 + (i+0.5)*step, y - hgt - 16*p);
+    ctx.lineTo(x0 + (i+1)*step, y - hgt);
+    ctx.closePath(); ctx.fill();
+  }
+}
+function drawCoin(ev, d){
+  if(ev.taken) return;
+  const p = persp(d), x = SX(ev.x, p), y = SY(d) - 14*p;
+  const r = Math.max(2, 12*p), sq = Math.abs(Math.sin(time*3 + ev.z)); // 旋转闪烁
+  ctx.fillStyle = '#ffd54f';
+  ctx.beginPath(); ctx.ellipse(x, y, Math.max(1.5, r*sq), r, 0, 0, 7); ctx.fill();
+  ctx.strokeStyle = '#c98a00'; ctx.lineWidth = Math.max(1, 2*p); ctx.stroke();
+}
+function drawBoss(d){
+  const p = persp(d), x = SX(0, p), y = SY(d);
+  const figH = 54 * Math.min(1.3, H/760);
+  drawFigure(x, y, figH*p*2.4, 0, '#8e24aa');                  // 大个子紫色 Boss
+  const by = y - figH*p*2.4 - 24*p;
+  ctx.fillStyle = '#8e24aa';
+  ctx.beginPath(); ctx.arc(x, by, Math.max(9, 24*p), 0, 7); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.font = '800 ' + Math.max(10, 22*p) + 'px sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('👑' + level.boss, x, by + 1);
+}
+function drawStairs(){
+  if(level.boss) return;                      // Boss 关没有台阶
+  for(let k=5; k>=1; k--){
+    const st = level.stairs[k-1];
+    const zc = level.finishZ + 20 + (k-0.5)*30, d = zc - pz;
+    if(d > VIEW || d < -40) continue;
+    const p = persp(d), y = SY(d) - k*7*p;
+    const x0 = SX(-0.98,p), x1 = SX(0.98,p), bh = 30*p;
+    ctx.fillStyle = k%2 ? '#ffd54f' : '#ffca28';
+    ctx.beginPath(); ctx.roundRect(x0, y - bh, x1-x0, bh, 6*p); ctx.fill();
+    ctx.fillStyle = '#7a5200';
+    ctx.font = '800 ' + Math.max(9, 24*p) + 'px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('⭐ ×' + st.mult + '（需 ' + st.need + ' 人）', (x0+x1)/2, y - bh/2);
+  }
+}
+function drawEnemy(ev, d){
+  const p = persp(d), y = SY(d);
+  const x = SX(ev.x, p);
+  const figH = 54 * Math.min(1.3, H/760);
+  const show = Math.min(ev.n, 12);
+  for(let i = show - 1; i >= 0; i--){
+    const row = Math.floor(i / 4), col = i % 4;
+    drawFigure(x + (col-1.5)*14*p*2, y - row*20*p - (col%2)*8*p, figH*p*0.9, i*1.3, '#b71c1c');
+  }
+  // 敌方人数牌（红底白字）
+  const by = y - figH*p - 30*p - 10;
+  ctx.fillStyle = '#c62828';
+  ctx.beginPath(); ctx.arc(x, by, Math.max(8, 20*p), 0, 7); ctx.fill();
+  ctx.fillStyle = '#fff'; ctx.font = '800 ' + Math.max(9, 18*p) + 'px sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(ev.n, x, by + 1);
+}
+function draw(){
+  const th = level.theme;
+  // 天空与地面
+  const g = ctx.createLinearGradient(0,0,0,H*0.55);
+  g.addColorStop(0, th.sky[0]); g.addColorStop(1, th.sky[1]);
+  ctx.fillStyle = g; ctx.fillRect(0,0,W,H*0.55);
+  ctx.fillStyle = th.ground; ctx.fillRect(0, H*0.3, W, H*0.72);
+  // 星空主题：天上撒星星
+  if(th.deco === 'star'){
+    ctx.fillStyle = 'rgba(255,255,255,.9)';
+    for(let i=0;i<40;i++){
+      const x = (i*97) % W, y = (i*53) % (H*0.28);
+      ctx.fillRect(x, y, 2, 2);
+    }
+  }else{ // 太阳
+    ctx.fillStyle = 'rgba(255,244,180,.95)';
+    ctx.beginPath(); ctx.arc(W*0.82, H*0.09, 26, 0, 7); ctx.fill();
+  }
+  // 跑道
+  const pF = persp(VIEW), yF = SY(VIEW), pN = persp(-30), yN = SY(-30);
+  ctx.fillStyle = th.track;
+  ctx.beginPath();
+  ctx.moveTo(SX(-1.06,pF), yF); ctx.lineTo(SX(1.06,pF), yF);
+  ctx.lineTo(SX(1.06,pN), yN); ctx.lineTo(SX(-1.06,pN), yN);
+  ctx.closePath(); ctx.fill();
+  // 横条纹（速度感）
+  ctx.fillStyle = th.stripe;
+  const base = Math.floor(pz/40)*40;
+  for(let zz = base; zz < pz + VIEW; zz += 40){
+    const d = zz - pz; if(d < -30) continue;
+    const p = persp(d), y = SY(d), hh = Math.max(1, 8*p);
+    ctx.fillRect(SX(-1.06,p), y - hh, SX(1.06,p) - SX(-1.06,p), hh);
+  }
+  // 中线虚线
+  for(let zz = base; zz < pz + VIEW; zz += 40){
+    const d = zz - pz + 20; if(d < -30) continue;
+    const p = persp(d), y = SY(d);
+    ctx.fillStyle = 'rgba(255,255,255,.6)';
+    ctx.fillRect(SX(0,p) - 2*p, y - 14*p, 4*p, 14*p);
+    ctx.fillStyle = th.stripe;
+  }
+  // 远处 → 近处绘制
+  const items = [];
+  for(const de of level.decos){ const d = de.z - pz; if(d > -30 && d < VIEW) items.push({d, de}); }
+  for(const ev of level.events){ if(ev.done) continue; const d = ev.z - pz;
+    if(d > -30 && d < VIEW) items.push({d, ev}); }
+  items.sort((a,b) => b.d - a.d);
+  drawStairs();
+  if(level.boss){ const bd = level.finishZ + 40 - pz; if(bd > -30 && bd < VIEW) drawBoss(bd); }
+  for(const it of items){
+    if(it.de) drawDeco(it.de, it.d, th);
+    else if(it.ev.kind === 'gate') drawGate(it.ev, it.d);
+    else if(it.ev.kind === 'enemy') drawEnemy(it.ev, it.d);
+    else if(it.ev.kind === 'coin') drawCoin(it.ev, it.d);
+    else drawObs(it.ev, it.d);
+  }
+  // 小人队伍
+  const show = Math.min(crowd, 70);
+  const perRow = Math.max(2, Math.ceil(Math.sqrt(show * 1.7)));
+  const figH = 54 * Math.min(1.3, H/760);
+  const cColor = crowdColor();
+  for(let i = show - 1; i >= 0; i--){
+    const row = Math.floor(i / perRow), col = i % perRow;
+    const jx = ((i*37) % 11 - 5) * 0.008;
+    const wx = Math.max(-0.95, Math.min(0.95,
+      px + (col - (perRow-1)/2) * 0.13 + jx));
+    const dz = -row * 8 - (col % 2) * 3;
+    const p = persp(dz), y = SY(dz), x = SX(wx, p);
+    drawFigure(x, y, figH * p, i * 0.9, cColor);
+  }
+  // 人数牌
+  const bp = persp(0), bx = SX(px, bp), by = SY(0) - figH - 26;
+  ctx.fillStyle = 'rgba(255,255,255,.94)';
+  ctx.beginPath(); ctx.arc(bx, by, 24, 0, 7); ctx.fill();
+  ctx.fillStyle = '#333'; ctx.font = '800 22px sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(crowd, bx, by + 1);
+  // 浮动反馈文字
+  for(const f of floats){
+    ctx.globalAlpha = Math.max(0, 1 - f.age/1.3);
+    ctx.fillStyle = f.good ? '#1b9e4b' : '#e53935';
+    ctx.font = '800 34px sans-serif';
+    ctx.fillText(f.txt, bx, by - 40 - f.age*60);
+    ctx.globalAlpha = 1;
+  }
+  // 彩带
+  for(const c of confetti){
+    ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.r);
+    ctx.fillStyle = c.c; ctx.fillRect(-c.s/2, -c.s/4, c.s, c.s/2);
+    ctx.restore();
+  }
+}
+
+/* ================= 主循环 ================= */
+let last = performance.now();
+function loop(now){
+  const dt = Math.min(0.05, (now - last)/1000); last = now;
+  update(dt);
+  draw();
+  requestAnimationFrame(loop);
+}
+showMenu();
+requestAnimationFrame(loop);
+</script>
+</body>
+</html>
