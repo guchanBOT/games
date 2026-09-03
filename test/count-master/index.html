@@ -954,7 +954,7 @@ function drawFight(){
   // 王的血量牌（打起来和打输时显示；王倒地打赢了就撤掉）
   if(!fxW && level.boss > 0){
     const bs = '💪' + level.boss, kbh = 52, kbw = kbh + bs.length*16;
-    const kby = Math.max(96, ky - kH*2.4 - 30);          // 别压到顶部 HUD
+    const kby = Math.max(176, ky - kH*2.4 - 30);         // 别压到顶部 HUD 和标题
     ctx.fillStyle = bc;
     ctx.beginPath(); ctx.roundRect(cx - kbw/2, kby - kbh/2, kbw, kbh, kbh/2); ctx.fill();
     ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 3; ctx.stroke();
