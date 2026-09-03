@@ -288,7 +288,14 @@ function genLevel(n, up){
   // 关底布局：跑道结束 → 上一座擂台(守门王站中间) → 打赢后再拉开一段才到 ×台阶
   const bossZ = finishZ + 46;                    // 擂台中心
   const stairZ0 = finishZ + 150;                 // 登塔台阶，和擂台明显分开
-  const boss = Math.min(2500, Math.max(8, Math.floor(e * 0.5)));   // ≈你的一半人数
+  // 王血 = 预期人数 × 王系数。系数随关卡逐关变高（第1关 0.50 → 第60关 0.80），
+  // 也就是要到王面前留下“预期人数”的多少成：0.50 很容易赢 → 0.80 约等于只有
+  // 发挥到 8 成的人能赢（到王胜率从接近100% 一路压到 30–40%）。三个数是调难度用的旋钮：
+  const BOSS_F0    = 0.50;      // 起始系数（第1关）
+  const BOSS_FSTEP = 0.0051;    // 每关往上加多少
+  const BOSS_FMAX  = 0.80;      // 封顶系数（≈第60关），再往后不再变难
+  const bossF = Math.min(BOSS_FMAX, BOSS_F0 + (n - 1) * BOSS_FSTEP);
+  const boss  = Math.min(MAXC, Math.max(8, Math.floor(e * bossF)));
   // ×台阶门槛按“撞完守门王还剩多少”来标：顶台留 20% 余量，
   // 这样“每个门都选得差不多对”就能上顶台 ×5（而不是必须极限完美）
   const M = Math.max(2, Math.floor((e - boss) * 0.8));
