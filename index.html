@@ -60,7 +60,15 @@
     </a>
   </div>
 <script>
-if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').catch(function () {}); }
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js').catch(function () {});
+  // 自动换代：老 Service Worker 还在时，强制检查更新；换上新版后自动刷新一次，让用户无缝看到最新大厅
+  if (!sessionStorage.getItem('lobbyAutoReload')) {
+    sessionStorage.setItem('lobbyAutoReload', '1');
+    navigator.serviceWorker.addEventListener('controllerchange', function () { location.reload(); });
+    navigator.serviceWorker.ready.then(function (reg) { reg.update().catch(function () {}); });
+  }
+}
 
 /* 全屏按钮：让"像 App"更进一步（设备支持才显示） */
 var fsBtn = document.getElementById('fs-btn');
