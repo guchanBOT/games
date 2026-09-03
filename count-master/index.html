@@ -8,6 +8,7 @@
 <meta name="theme-color" content="#7ec8f7">
 <title>哆啦A梦数字奔跑</title>
 <link rel="icon" href="./icon-192.png">
+<link rel="manifest" href="./manifest.json">
 <style>
   html,body{margin:0;height:100%;overflow:hidden;background:#7ec8f7;
     font-family:-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;
@@ -41,6 +42,7 @@
 
 <!-- 局内小按钮：随时回开头 / 开关背景音乐（菜单界面会被遮住） -->
 <div id="ctrl" style="position:fixed;right:12px;top:calc(58px + env(safe-area-inset-top));display:flex;gap:6px;z-index:6">
+  <button id="btnLobby" class="mini">🎮 大厅</button>
   <button id="btnHome" class="mini">🏠 回到开头</button>
 </div>
 
@@ -75,7 +77,8 @@
     <div id="hatHint" style="font-size:12px;color:#a89a8c;margin-top:6px"></div>
   </div>
   <button id="btnReset" class="ghost small" style="opacity:.55;margin-top:8px">🗑 清空进度</button>
-</div>
+<div id="verTag" style="font-size:12px;color:#a89a8c;margin-top:4px"></div>
+  </div>
 
 <div id="result" class="overlay hidden">
   <div class="big" id="resTitle">太棒了！</div>
@@ -87,6 +90,8 @@
 
 <script>
 'use strict';
+/* 游戏版本号：bump-version.sh 会同步改 sw.js 和 manifest.json */
+const GAME_VER = '1.0.0';
 /* ================= 基础 ================= */
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 let W = 0, H = 0;
@@ -671,6 +676,8 @@ $('btnNext').onclick = ()=>{
   const m = store.unlocked;
   curLevel = Math.min(m, curLevel + 1); showMenu();
 };
+$('verTag').textContent = 'v' + GAME_VER;
+$('btnLobby').onclick = ()=>{ location.href='../'; };   // 回游戏大厅
 $('btnHome').onclick = ()=>{ sndBad(); showMenu(); };   // 随时回开头
 
 function spawnConfetti(){
@@ -1685,5 +1692,6 @@ function loop(now){
 showMenu();
 requestAnimationFrame(loop);
 </script>
+<script>if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').catch(function(){});}</script>
 </body>
 </html>

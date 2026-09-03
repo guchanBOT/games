@@ -1,0 +1,16 @@
+{
+  "name": "哆啦A梦数字奔跑",
+  "short_name": "数字奔跑",
+  "description": "哆啦A梦带队冲关的数字跑酷小游戏",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#87ceeb",
+  "theme_color": "#3595d6",
+  "version": "1.0.0",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" }
+  ]
+}
