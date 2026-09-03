@@ -2,7 +2,7 @@
    在线时每次都先向服务器要最新文件，部署完新版本后用户下次打开自动就是新版，
    不用清缓存、也不用每次改版本号；只有断网/服务器出错时才用本地缓存兜底。
    注意：本文件本身改动后，建议顺手把下面的版本号 +1，能更快唤醒旧 Service Worker。 */
-var CACHE = 'game2048-v3';
+var CACHE = 'test2048-v1';
 var FILES = ['./', './index.html', './manifest.json',
              './icon-180.png', './icon-192.png', './icon-512.png'];
 

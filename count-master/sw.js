@@ -17,7 +17,8 @@ self.addEventListener('activate', function (e) {
   e.waitUntil(
     caches.keys().then(function (keys) {
       return Promise.all(keys.map(function (k) {
-        return k === CACHE ? null : caches.delete(k);
+        // 规范：只清本游戏的历史缓存，不误删大厅或其它游戏的缓存
+        return k.indexOf('countmaster-') === 0 && k !== CACHE ? caches.delete(k) : null;
       }));
     }).then(function () { return self.clients.claim(); })
   );
