@@ -171,17 +171,19 @@ function genLevel(n, up){
   let z = 320;
   let enemiesLeft = d.enemies;
   let obsLeft = d.obs;
+  let mulLeft = 3 + Math.floor(n/6);           // 每关乘法有预算，避免一路×冲到顶
 
   function randOp(positiveOnly){
-    if(d.super && !positiveOnly && R() < 0.1) return {t:'mul', v:4};   // 超大门 ×4
+    if(d.super && !positiveOnly && mulLeft > 0 && R() < 0.1){ mulLeft--; return {t:'mul', v:4}; }
     const pool = ['add'];
     if(!positiveOnly){
       if(d.sub && e >= 3) pool.push('sub');
       if(d.div && e >= 4 && e % 2 === 0) pool.push('div');
     }
-    if(d.mul) pool.push('mul');
-    if(d.mul3) pool.push('mul3');
+    if(d.mul && mulLeft > 0) pool.push('mul');
+    if(d.mul3 && mulLeft > 0) pool.push('mul3');
     const t = pool[Math.floor(R()*pool.length)];
+    if(t==='mul' || t==='mul3') mulLeft--;
     if(t==='add')  return {t:'add', v: ri(5, d.maxAdd)};
     if(t==='sub')  return {t:'sub', v: Math.min(e-1, ri(3, Math.max(4, Math.floor(d.maxAdd*0.7))))};
     if(t==='mul')  return {t:'mul', v: 2};
@@ -233,7 +235,7 @@ function genLevel(n, up){
     const est = op => op.t==='rnd' ? e + 20 : applyOp(e, op);
     let e2 = 0;
     for(const op of pair){ const ev = est(op); if(ev > e2) e2 = ev; }
-    e = Math.min(999, e2);
+    e = Math.min(MAXC, e2);
     const seg = d.gap + ri(-15, 25);
     z += seg;
     // 障碍花样（随关卡解锁：贴边红刺 → 旋转锯片 → 摆锤 → 双刺夹道），
@@ -282,7 +284,7 @@ function genLevel(n, up){
   // 关底布局：跑道结束 → 上一座擂台(守门王站中间) → 打赢后再拉开一段才到 ×台阶
   const bossZ = finishZ + 46;                    // 擂台中心
   const stairZ0 = finishZ + 150;                 // 登塔台阶，和擂台明显分开
-  const boss = Math.min(300, Math.max(8, Math.floor(e * 0.5)));   // ≈你的一半人数
+  const boss = Math.min(2500, Math.max(8, Math.floor(e * 0.5)));   // ≈你的一半人数
   // ×台阶门槛按“撞完守门王还剩多少”来标：顶台留 20% 余量，
   // 这样“每个门都选得差不多对”就能上顶台 ×5（而不是必须极限完美）
   const M = Math.max(2, Math.floor((e - boss) * 0.8));
@@ -321,6 +323,7 @@ const SY = d => { const p = persp(d); return H*0.30 + (H*1.02 - H*0.30) * p; };
 
 /* ================= 游戏状态 ================= */
 let level = null, state = 'menu';   // menu | run | finish | over | locked
+const MAXC = 9999;                  // 小人人数上限（提高，避免一冲就到顶）
 let crowd = 5, px = 0, targetX = 0, pz = 0;
 let floats = [], confetti = [];
 let finT = 0, time = 0;
@@ -655,7 +658,7 @@ function update(dt){
           ? (px < 0 ? 0 : 1)
           : Math.max(0, Math.min(L-1, Math.floor((px + 1) * L / 2)))];
         const old = crowd;
-        crowd = Math.max(0, Math.min(999, applyOp(crowd, op)));
+        crowd = Math.max(0, Math.min(MAXC, applyOp(crowd, op)));
         const delta = crowd - old;
         if(op.t === 'pass'){ addFloat('绕过去！人不变', false); sndGood(); }
         else{
