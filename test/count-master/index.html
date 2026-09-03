@@ -126,7 +126,7 @@ function diffOf(n){
     obsDmg : 3 + Math.floor(n/3),
     enemies: n >= 15 ? 2 : (n >= 7 ? 1 : 0),  // 敌方队伍数量
     bonus  : n % 5 === 0,                     // 每 5 关一个奖励关（纯享福）
-    speed  : Math.min(1.35, 0.95 + n*0.02),
+    speed  : Math.min(1.6, 0.9 + n*0.05),      // 越到后面跑得越快
   };
 }
 function applyOp(n, op){
@@ -246,10 +246,12 @@ function genLevel(n, up){
   const stairs = [];
   for(let j=1; j<=5; j++)
     stairs.push({mult: j, need: Math.round(e * (j-1) / 5)});
-  // Boss 关（每 5 关）：关底打大个子，打赢奖励 20 金币；血量封顶 200
-  const boss = d.bonus ? Math.min(200, Math.max(10, Math.round(e * 0.8))) : 0;
-  return {n, start, events, finishZ, length: finishZ + (boss ? 160 : 220), theme, decos,
-          speed: d.speed, par: e, bonus: d.bonus, stairs, boss, bossMax: boss};
+  // 关底“守门大王”：每关都有。人够就撞倒它、上 ×台阶；人不够就被拦（难度跟关卡走）
+  const boss = Math.min(240, Math.max(6, Math.round(e * 0.55)));
+  return {n, start, events, finishZ, length: finishZ + 190, theme, decos,
+          speed: d.speed, par: e, bonus: d.bonus, stairs,
+          stairZ0: finishZ + 14, stairT: 26,
+          boss, bossMax: boss, bossZ: finishZ + 6};
 }
 
 /* ================= 主题 ================= */
@@ -450,21 +452,14 @@ function startLevel(){
 }
 function endLevel(fail){
   state = 'over';
-  const isBoss = !!level.bossMax;
   let stars, title, info;
   if(fail){
     stars = 0; title = '哎呀，小人都没有啦'; info = '别灰心，再试一次！';
-  }else if(isBoss){
-    if(bossResult === 'win'){
-      stars = 3; store.addCoins(20);
-      title = '击败 Boss！👑';
-      info = '剩 ' + crowd + ' 人 · 奖励 20🪙' + (runCoins ? ' · 捡到 ' + runCoins + '🪙' : '');
-    }else{
-      stars = 1;
-      title = '差一点点！';
-      info = 'Boss 还剩 ' + level.boss + ' 人 · 下次攒更多人再来';
-    }
-  }else{
+  }else if(bossResult === 'lose'){               // 守门王没撞过：给 1 星、仍算过关，重试攒人
+    stars = 1;
+    title = '守门王拦住了你！';
+    info = '下次攒更多人再来（还差 ' + Math.max(0, level.bossMax - crowd) + ' 人）';
+  }else{                                         // 撞倒守门王 → 爬上 ×台阶 结算
     let stair = 0;
     for(const s of level.stairs) if(crowd >= s.need) stair = s.mult;
     const score = crowd * Math.max(1, stair);
@@ -472,6 +467,7 @@ function endLevel(fail){
     title = ['','不错哦！','太棒了！','完美！'][stars];
     info = crowd + ' 人 × ' + Math.max(1,stair) + ' 倍 = ' + score + ' 分'
          + (runCoins ? ' · 捡到 ' + runCoins + '🪙' : '');
+    if(bossResult === 'win') info = '撞倒守门王 +5🪙 · ' + info;
   }
   if(fail){
     sndBad();
@@ -531,7 +527,7 @@ function update(dt){
         good ? sndGood() : sndBad();
         if(crowd <= 0){ endLevel(true); return; }
       }else if(ev.kind === 'coin'){
-        if(Math.abs(px - ev.x) < 0.27){
+        if(Math.abs(px - ev.x) < 0.30){
           ev.taken = true; runCoins++; store.addCoins(1);
           addFloat('+1🪙', true);
           beep(1200, .06, 'sine', .07);
@@ -560,36 +556,39 @@ function update(dt){
       $('hudCount').textContent = '👥 ' + crowd;
     }
     if(pz >= level.finishZ){
-      state = level.boss ? 'fight' : 'finish';
+      state = 'fight';                          // 每关关底都先撞守门王
       finT = 0;
     }
   }
-  else if(state === 'fight'){                   // Boss 战：小人一个个扑上去
+  else if(state === 'fight'){                   // 守门王对决：人够→撞倒它上塔；人不够→被拦
     finT += dt;
     px += (0 - px) * Math.min(1, dt*6); targetX = 0;
-    const bz = level.finishZ + 40;
-    if(pz < bz){ pz += 150 * level.speed * dt; }
-    else{
+    if(pz < level.bossZ){ pz += 150 * level.speed * dt; }
+    else if(crowd < level.boss){                // 人数不够：被守门王拦下（1 星过关，可重试攒人）
+      if(!bossResult){ bossResult = 'lose'; sndBad(); addFloat('还差 ' + (level.boss - crowd) + ' 人…', false); }
+      if(finT > 1.2) endLevel(false);
+    }else{                                      // 撞赢：守门王倒下（小人一个不少），去登塔
+      if(!bossResult){
+        bossResult = 'win'; sndGood(); store.addCoins(5);
+        addFloat('撞倒守门王 +5🪙', true);
+        $('hudCoin').textContent = '🪙 ' + store.coins();
+      }
       fightAcc += dt;
-      const step = Math.max(1, Math.ceil(level.bossMax / 60));  // 血量再大也 3~4 秒打完
-      while(fightAcc > 0.06 && level.boss > 0 && crowd > 0){
-        fightAcc -= 0.06;
+      const step = Math.max(1, Math.ceil(level.bossMax / 30));  // 血条快速清零的演出，不动小人
+      while(fightAcc > 0.05 && level.boss > 0){
+        fightAcc -= 0.05;
         level.boss = Math.max(0, level.boss - step);
-        crowd = Math.max(0, crowd - step);
         beep(280 + Math.random()*220, .05, 'square', .05);
       }
-      $('hudCount').textContent = '👥 ' + crowd;
-      if(level.boss <= 0){ bossResult = 'win'; endLevel(false); }
-      else if(crowd <= 0){ bossResult = 'lose'; endLevel(false); }
+      if(level.boss <= 0 && finT > 0.8){ finT = 0; state = 'finish'; }  // 冲向 ×台阶
     }
   }
-  else if(state === 'finish'){
+  else if(state === 'finish'){                  // 爬 ×台阶：能站上的最高一级
     finT += dt;
     px += (0 - px) * Math.min(1, dt*6); targetX = 0;
-    // 能站上的最高台阶：人数 >= 该级门槛
-    let stair = 0;
-    for(const s of level.stairs) if(crowd >= s.need) stair = s.mult;
-    const stopZ = level.finishZ + 20 + (stair - 0.5) * 30;
+    let si = 0;
+    level.stairs.forEach((s,i) => { if(crowd >= s.need) si = i; });
+    const stopZ = level.stairZ0 + si * level.stairT + level.stairT * 0.5;
     if(pz < stopZ) pz += 150 * level.speed * dt;
     else if(finT > 0.4) endLevel(false);
   }
@@ -665,7 +664,7 @@ function drawObs(ev, d){
 function drawCoin(ev, d){
   if(ev.taken) return;
   const p = persp(d), x = SX(ev.x, p), y = SY(d) - 16*p;
-  const r = Math.max(3, 16*p);                                  // 更大
+  const r = Math.max(4, 21*p);                                  // 再大一圈
   const spin = Math.abs(Math.sin(time*3 + ev.z));               // 自转：侧过去变窄
   const rx = Math.max(1.6, r*(0.35 + 0.65*spin));               // 留点厚度，不会完全消失
   ctx.save();
@@ -685,8 +684,13 @@ function drawCoin(ev, d){
 }
 function drawBoss(d){
   const p = persp(d), x = SX(0, p), y = SY(d);
+  // 脚下红色警告圈：守门王的“领地”，人不够别硬闯
+  ctx.fillStyle = 'rgba(229,57,53,.18)';
+  ctx.beginPath(); ctx.ellipse(x, y, 74*p, 24*p, 0, 0, 7); ctx.fill();
+  ctx.strokeStyle = 'rgba(229,57,53,.7)'; ctx.lineWidth = Math.max(1.5, 3*p);
+  ctx.beginPath(); ctx.ellipse(x, y, 74*p, 24*p, 0, 0, 7); ctx.stroke();
   const figH = 54 * Math.min(1.3, H/760);
-  drawFigure(x, y, figH*p*2.4, 0, '#8e24aa');                  // 大个子紫色 Boss
+  drawFigure(x, y, figH*p*2.4, 0, '#8e24aa');                  // 紫色守门王
   const by = y - figH*p*2.4 - 24*p;
   ctx.fillStyle = '#8e24aa';
   ctx.beginPath(); ctx.arc(x, by, Math.max(9, 24*p), 0, 7); ctx.fill();
@@ -695,19 +699,41 @@ function drawBoss(d){
   ctx.fillText('👑' + level.boss, x, by + 1);
 }
 function drawStairs(){
-  if(level.boss) return;                      // Boss 关没有台阶
-  for(let k=5; k>=1; k--){
-    const st = level.stairs[k-1];
-    const zc = level.finishZ + 20 + (k-0.5)*30, d = zc - pz;
-    if(d > VIEW || d < -40) continue;
-    const p = persp(d), y = SY(d) - k*7*p;
-    const x0 = SX(-0.98,p), x1 = SX(0.98,p), bh = 30*p;
-    ctx.fillStyle = k%2 ? '#ffd54f' : '#ffca28';
-    ctx.beginPath(); ctx.roundRect(x0, y - bh, x1-x0, bh, 6*p); ctx.fill();
-    ctx.fillStyle = '#7a5200';
-    ctx.font = '800 ' + Math.max(9, 24*p) + 'px sans-serif';
+  // 五级台阶一级级往上升：前立面(暗金)+受光台面，站上去越高级 × 倍数越大
+  const T = level.stairT, R = 26, s0 = level.stairZ0;
+  for(let j = 5; j >= 1; j--){                          // 远的先画，近的盖住下沿
+    const st = level.stairs[j-1];
+    const zF = s0 + (j-1)*T, zB = zF + T;
+    const dF = zF - pz, dB = zB - pz;
+    if(dF > VIEW + 20 || dB < -55) continue;
+    const pF = persp(dF), pB = persp(dB);
+    const hi = j*R, lo = (j-1)*R;                       // 台面/前立面底 的高程
+    const x0F = SX(-0.99,pF), x1F = SX(0.99,pF);
+    const x0B = SX(-0.99,pB), x1B = SX(0.99,pB);
+    const y0F = SY(dF) - lo*pF, y1F = SY(dF) - hi*pF;   // 前立面 底/顶
+    const y1B = SY(dB) - hi*pB;                         // 台面后沿（更高）
+    // 前立面
+    ctx.fillStyle = j%2 ? '#e0a00e' : '#d49300';
+    ctx.beginPath();
+    ctx.moveTo(x0F, y0F); ctx.lineTo(x0F, y1F);
+    ctx.lineTo(x1F, y1F); ctx.lineTo(x1F, y0F);
+    ctx.closePath(); ctx.fill();
+    // 受光台面（向后收窄）
+    ctx.fillStyle = j%2 ? '#ffe082' : '#ffd54f';
+    ctx.beginPath();
+    ctx.moveTo(x0F, y1F); ctx.lineTo(x1F, y1F);
+    ctx.lineTo(x1B, y1B); ctx.lineTo(x0B, y1B);
+    ctx.closePath(); ctx.fill();
+    ctx.strokeStyle = 'rgba(122,80,0,.35)'; ctx.lineWidth = 1; ctx.stroke();
+    // 台上的字：×倍数 + 要多少人
+    ctx.fillStyle = '#5d3800';
+    ctx.font = '800 ' + Math.max(8, 20*pF) + 'px sans-serif';
     ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('⭐ ×' + st.mult + '（需 ' + st.need + ' 人）', (x0+x1)/2, y - bh/2);
+    ctx.fillText('×' + st.mult + ' 需' + st.need + '人', (x0F+x1F)/2, (y1F+y0F)/2);
+    if(j === 5){                                           // 顶台插面小旗作标识
+      ctx.font = Math.max(9, 28*pB) + 'px sans-serif';
+      ctx.fillText('🏁', (x0B+x1B)/2, y1B - 10*pB);
+    }
   }
 }
 function drawEnemy(ev, d){
@@ -775,7 +801,7 @@ function draw(){
     if(d > -30 && d < VIEW) items.push({d, ev}); }
   items.sort((a,b) => b.d - a.d);
   drawStairs();
-  if(level.boss){ const bd = level.finishZ + 40 - pz; if(bd > -30 && bd < VIEW) drawBoss(bd); }
+  if(level.boss > 0){ const bd = level.bossZ - pz; if(bd > -30 && bd < VIEW) drawBoss(bd); }
   for(const it of items){
     if(it.de) drawDeco(it.de, it.d, th);
     else if(it.ev.kind === 'gate') drawGate(it.ev, it.d);
@@ -783,23 +809,29 @@ function draw(){
     else if(it.ev.kind === 'coin') drawCoin(it.ev, it.d);
     else drawObs(it.ev, it.d);
   }
-  // 小人队伍（列窄、行近、带点抖动，看起来是一团紧挨的奔跑人群）
+  // 小人队伍：前尖后宽、不规则但贴紧的人群团（用黄金角铺满，不是整齐横排）
   const show = Math.min(crowd, 80);
-  const perRow = Math.max(2, Math.ceil(Math.sqrt(show * 1.35)));
   const figH = 54 * Math.min(1.3, H/760);
   const cColor = crowdColor();
-  const XSP = 0.09, ZSP = 6, ZST = 2.5;               // 排得比原来密得多
-  for(let i = show - 1; i >= 0; i--){
-    const row = Math.floor(i / perRow), col = i % perRow;
-    const jx = (((i*37) % 11) - 5) * 0.006;
+  // 终点登塔时小人逐级“站上台阶”抬升
+  let lift = 0;
+  if(state === 'finish' && level.stairZ0 && pz > level.stairZ0){
+    const k = Math.min(4, Math.floor((pz - level.stairZ0) / level.stairT));
+    if(k >= 0) lift = (k + 1) * 22;
+  }
+  const rX = Math.min(0.28, 0.10 + 0.02 * Math.sqrt(show));   // 团宽：收拢，不横向摊开
+  const rZ = Math.min(20, 13 + 0.5 * Math.sqrt(show));        // 前后纵深：一点点
+  for(let i = show - 1; i >= 0; i--){                          // 后画前的：靠前的人盖住后面的
+    const rr = Math.sqrt((i + 0.5) / show);                    // 中心→外圈铺满
+    const aa = i * 2.399963 + ((i * 7919) % 13) * 0.002;       // 黄金角+抖动，不规则
     const wx = Math.max(-0.98, Math.min(0.98,
-      px + (col - (perRow-1)/2) * XSP + jx));
-    const dz = -row * ZSP - (col % 2) * ZST - ((i*17) % 4) * 1.5;
-    const p = persp(dz), y = SY(dz), x = SX(wx, p);
+      px + Math.cos(aa) * rr * rX + (((i*37) % 11) - 5) * 0.006));
+    const dz = -Math.abs(Math.sin(aa)) * rr * rZ - ((i*17) % 5) * 1.5;
+    const p = persp(dz), y = SY(dz) - lift, x = SX(wx, p);
     drawFigure(x, y, figH * p, i * 0.9, cColor);
   }
   // 人数牌
-  const bp = persp(0), bx = SX(px, bp), by = SY(0) - figH - 26;
+  const bp = persp(0), bx = SX(px, bp), by = SY(0) - figH - 26 - lift;
   ctx.fillStyle = 'rgba(255,255,255,.94)';
   ctx.beginPath(); ctx.arc(bx, by, 24, 0, 7); ctx.fill();
   ctx.fillStyle = '#333'; ctx.font = '800 22px sans-serif';
