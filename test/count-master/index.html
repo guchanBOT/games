@@ -57,12 +57,12 @@
   <button id="btnCoinUndo" class="ghost small" style="display:none"></button>
   <div style="margin-top:14px;text-align:center">
     <div style="font-size:14px;font-weight:700;color:#776e65;margin-bottom:6px">小人颜色</div>
-    <div id="palette" style="display:flex;gap:10px;justify-content:center;align-items:center"></div>
+    <div id="palette" style="display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;max-width:88vw"></div>
     <div id="palHint" style="font-size:12px;color:#a89a8c;margin-top:6px"></div>
   </div>
   <div style="margin-top:10px;text-align:center">
     <div style="font-size:14px;font-weight:700;color:#776e65;margin-bottom:6px">头上戴的</div>
-    <div id="hatPal" style="display:flex;gap:10px;justify-content:center;align-items:center"></div>
+    <div id="hatPal" style="display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;max-width:88vw"></div>
     <div id="hatHint" style="font-size:12px;color:#a89a8c;margin-top:6px"></div>
   </div>
   <button id="btnReset" class="ghost small" style="opacity:.55;margin-top:8px">🗑 清空进度</button>
@@ -383,21 +383,30 @@ const store = {
   hat(){ return +(localStorage.getItem('np_hat') || 0); },
   setHat(v){ localStorage.setItem('np_hat', v); },
 };
-/* 小人颜色皮肤：每攒 6 颗星解锁一个 */
-const COLORS = ['#ff7043','#42a5f5','#66bb6a','#ab47bc','#ffca28','#ec407a'];
-/* 帽子装饰：每攒 8 颗星解锁一个（第 0 个=不戴） */
-const HATS = ['', '🎩', '🪖', '🎀', '🐰', '🌟'];
+/* 小人颜色皮肤：8 款。每款一个“攒够多少总星数就解锁”的门槛，
+   越往后越慢——前期两关换一色，后期要慢慢攒（第 0 款一开始就有） */
+const COLORS = ['#ff7043','#42a5f5','#66bb6a','#ab47bc','#ffca28','#ec407a','#7e57c2','#26c6da'];
+const COLOR_STARS = [0, 10, 22, 36, 52, 72, 96, 124];
+/* 帽子装饰：8 款（第 0 个 = 不戴），门槛同样越往后越高 */
+const HATS = ['', '🎩', '🪖', '🎀', '🐰', '🌟', '👑', '🧸'];
+const HAT_STARS  = [0, 14, 30, 48, 70, 96, 126, 160];
 function totalStars(){
   let s = 0;
   for(let n = 1; n < store.unlocked; n++) s += store.stars(n);
   return s;
 }
-const unlockedColors = () => Math.min(COLORS.length, 1 + Math.floor(totalStars()/6));
-const crowdColor = () => COLORS[store.color() % unlockedColors()];
-const unlockedHats = () => Math.min(HATS.length, 1 + Math.floor(totalStars()/8));
-const hatEmoji = () => HATS[store.hat() % unlockedHats()];
+function unlockCount(arr){
+  const t = totalStars(); let c = 0;
+  while(c < arr.length && t >= arr[c]) c++;
+  return c;
+}
+const unlockedColors = () => unlockCount(COLOR_STARS);
+const unlockedHats   = () => unlockCount(HAT_STARS);
+const crowdColor = () => COLORS[store.color() % Math.max(1, unlockedColors())];
+const hatEmoji = () => HATS[store.hat() % Math.max(1, unlockedHats())];
 let curLevel = store.unlocked;
 let runCoins = 0, bossResult = null, fightAcc = 0;
+let fightFx = null;              // 守门王战胜负的小动画：{kind:'win'|'lose', t:播放时长}
 
 /* ================= 输入 ================= */
 let ptrX = null;
@@ -434,10 +443,10 @@ document.addEventListener('touchmove', e => e.preventDefault(), {passive:false})
 /* ================= 流程 ================= */
 const $ = id => document.getElementById(id);
 function paintPalette(){
-  const uc = unlockedColors(), cur = store.color() % uc;
+  const t = totalStars(), uc = unlockedColors(), cur = store.color() % uc;
   const pal = $('palette'); pal.innerHTML = '';
   for(let i = 0; i < COLORS.length; i++){
-    const unlocked = i < uc, dot = document.createElement('button');
+    const unlocked = t >= COLOR_STARS[i], dot = document.createElement('button');
     dot.type = 'button';
     dot.style.cssText = 'width:34px;height:34px;border-radius:50%;padding:0;cursor:pointer;' +
       'border:' + (i === cur ? '3px solid #2d2a26' : '3px solid transparent') + ';' +
@@ -448,21 +457,22 @@ function paintPalette(){
       dot.onclick = () => { store.setColor(i); sndGood(); paintPalette(); };
     }else{
       dot.textContent = '🔒'; dot.style.fontSize = '14px'; dot.style.color = '#9b8f7d';
-      dot.title = '还没解锁';
+      dot.title = '攒够 ' + COLOR_STARS[i] + ' 颗 ⭐ 解锁';
     }
     pal.appendChild(dot);
   }
-  const need = 6 * uc;                       // 解锁下一个颜色需要的总星数
-  const left = Math.max(0, need - totalStars());
-  $('palHint').textContent = left > 0
-    ? '再拿 ' + left + ' 颗 ⭐（攒够 ' + need + ' 颗）解锁下一个'
-    : '⭐ 每攒 6 颗解锁一个新颜色';
+  if(uc < COLORS.length){                       // 下一款要攒到多少
+    const need = COLOR_STARS[uc], left = Math.max(1, need - t);
+    $('palHint').textContent = '再拿 ' + left + ' 颗 ⭐（攒够 ' + need + ' 颗）解锁新颜色';
+  }else{
+    $('palHint').textContent = '⭐ 颜色全解锁啦，随便换';
+  }
 }
 function paintHats(){
-  const uh = unlockedHats(), cur = store.hat() % uh;
+  const t = totalStars(), uh = unlockedHats(), cur = store.hat() % uh;
   const pal = $('hatPal'); pal.innerHTML = '';
   for(let i = 0; i < HATS.length; i++){
-    const unlocked = i < uh, b = document.createElement('button');
+    const unlocked = t >= HAT_STARS[i], b = document.createElement('button');
     b.type = 'button';
     b.textContent = unlocked ? (HATS[i] || '🚫') : '🔒';
     b.style.cssText = 'font-size:20px;width:42px;height:40px;border-radius:12px;padding:0;cursor:pointer;' +
@@ -471,14 +481,17 @@ function paintHats(){
     if(unlocked){
       b.title = i === 0 ? '不戴帽子' : '戴这个';
       b.onclick = () => { store.setHat(i); sndGood(); paintHats(); };
+    }else{
+      b.title = '攒够 ' + HAT_STARS[i] + ' 颗 ⭐ 解锁';
     }
     pal.appendChild(b);
   }
-  const need = 8 * uh;                       // 解锁下一个帽子需要的总星数
-  const left = Math.max(0, need - totalStars());
-  $('hatHint').textContent = left > 0
-    ? '再拿 ' + left + ' 颗 ⭐（攒够 ' + need + ' 颗）解锁下一个'
-    : '⭐ 每攒 8 颗解锁一个新帽子';
+  if(uh < HATS.length){
+    const need = HAT_STARS[uh], left = Math.max(1, need - t);
+    $('hatHint').textContent = '再拿 ' + left + ' 颗 ⭐（攒够 ' + need + ' 颗）解锁新帽子';
+  }else{
+    $('hatHint').textContent = '⭐ 帽子全解锁啦，随便戴';
+  }
 }
 function refreshShop(){
   $('menuCoins').textContent = '🪙 ' + store.coins() + '　⭐ ' + totalStars();
@@ -570,7 +583,7 @@ function startLevel(){
   level = genLevel(curLevel, store.upLvl());
   crowd = level.start; px = 0; targetX = 0; pz = 0;
   floats = []; confetti = []; finT = 0;
-  runCoins = 0; bossResult = null; fightAcc = 0;
+  runCoins = 0; bossResult = null; fightAcc = 0; fightFx = null;
   state = 'run';
   $('menu').classList.add('hidden');
   $('result').classList.add('hidden');
@@ -714,10 +727,16 @@ function update(dt){
     finT += dt;
     px += (0 - px) * Math.min(1, dt*6); targetX = 0;
     if(pz < level.bossZ){ pz += 150 * level.speed * dt; }
-    else{
+    else if(fightFx){                           // 正在演胜负小动画：播完再收场
+      fightFx.t += dt;
+      if(fightFx.kind === 'win'){               // 王倒下、欢呼完 → 冲 ×台阶
+        if(fightFx.t >= (level.fxWinT || 1.7)){ fightFx = null; finT = 0; state = 'finish'; }
+      }else{                                    // 小人被打散 → 演完再判负（不马上黑屏）
+        if(fightFx.t >= (level.fxLoseT || 1.5)){ fightFx = null; endLevel(true); }
+      }
+    }else{
       if(level.fstep === undefined){            // 开场一次性定死步长 → 固定 ~1.8 秒线性打完
         level.fstep = Math.max(1, Math.ceil(Math.min(crowd, level.boss) / 36));
-        bossResult = 'fight';
         addFloat('和守门王打起来啦！', true); sndGood();
       }
       fightAcc += dt;
@@ -728,14 +747,18 @@ function update(dt){
         beep(280 + Math.random()*220, .05, 'square', .05);
       }
       $('hudCount').textContent = '👥 ' + crowd;
-      if(level.boss <= 0 && crowd > 0){        // 赢了：剩下的上 ×台阶
-        bossResult = 'win';
+      if(crowd > 0 && level.boss <= 0){         // 撞倒守门王：先放倒他再庆祝
+        level.boss = 0; bossResult = 'win';
         store.addCoins(5); addFloat('+5🪙', true);
         $('hudCoin').textContent = '🪙 ' + store.coins();
-        if(finT > 0.8){ finT = 0; state = 'finish'; }
-      }else if(crowd <= 0 && finT > 0.8){      // 输了：小人被打光 = 卡关
+        fightFx = {kind:'win', t:0};
+        level.fxWinT = 1.7;
+        beep(300, .25, 'sine', .16); sndWin();
+      }else if(crowd <= 0){                     // 人被打光：先播一段“被打散”的动画
         bossResult = 'lose';
-        endLevel(true);
+        fightFx = {kind:'lose', t:0};
+        level.fxLoseT = 1.5;
+        sndBad();
       }
     }
   }
@@ -776,28 +799,38 @@ function numPlate(s, x, y, px, fill){
   bigText(s, x, y, px, fill);
 }
 // 守门王大战：切到屏幕中央的“擂台特写”，高台+围绳，我方往上冲
+// 打赢：王侧倒砸地 → 金星四溅 → 我方欢呼跳；打输：我方小人被甩飞淡出
 function drawFight(){
-  const cx = W / 2;
+  const eff = fightFx;
+  const fxW = !!(eff && eff.kind === 'win');
+  const fxL = !!(eff && eff.kind === 'lose');
+  const shake = fxL ? Math.sin(finT*95) * Math.max(0, 1 - eff.t*1.8) * 9 : 0; // 输时画面抖一抖
+  const cx = W/2 + shake;
   const g = ctx.createLinearGradient(0, 0, 0, H);
-  g.addColorStop(0, '#0b1526'); g.addColorStop(.6, '#16283f'); g.addColorStop(1, '#000');
+  g.addColorStop(0, fxL ? '#2c0f10' : fxW ? '#3a2d00' : '#0b1526');
+  g.addColorStop(.6, fxL ? '#451516' : fxW ? '#241d04' : '#16283f');
+  g.addColorStop(1, '#000');
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
-  bigText('👑 守门王之战', cx, Math.max(44, H*0.11), Math.min(W*0.05, 46), '#ffd54f');
+  // 大字标题：打起来 / 打赢 / 打输，各说各话
+  bigText(fxW ? '🎉 撞倒守门王！' : fxL ? '💨 守门王赢了…' : '👑 守门王之战',
+          W/2, Math.max(44, H*0.10), Math.min(W*0.05, 46), fxL ? '#ff8a80' : '#ffd54f');
   ctx.fillStyle = 'rgba(255,255,255,.06)';
   ctx.beginPath(); ctx.arc(cx, H*0.60, Math.min(W*0.44, 420), 0, 7); ctx.fill();
   // 高台（木质 + 抬起的影子）
   const cy = H*0.60, rx = Math.min(W*0.36, 340), ry = rx*0.24;
   ctx.fillStyle = 'rgba(0,0,0,.5)';
   ctx.beginPath(); ctx.ellipse(cx, cy + ry*0.22, rx, ry, 0, 0, 7); ctx.fill();
-  ctx.fillStyle = '#9a6a2f';
+  ctx.fillStyle = fxW ? '#a07a22' : '#9a6a2f';
   ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, 7); ctx.fill();
   ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 3; ctx.stroke();
-  ctx.fillStyle = '#c98a3a';
+  ctx.fillStyle = fxW ? '#c9a33c' : '#c98a3a';
   ctx.beginPath(); ctx.ellipse(cx, cy - ry*0.5, rx*0.8, ry*0.8, 0, 0, 7); ctx.fill();
-  // 四角桩
+  // 四角桩（打赢砸地那一下整台轻微歪）
   ctx.fillStyle = '#6b4a1f';
   const hp = Math.min(70, H*0.11);
+  const tilt = fxW ? 0.06 * Math.min(1, eff.t/0.6) : 0;
   for(const [a,b] of [[-1,-1],[1,-1],[-1,1],[1,1]]){
-    const px = cx + a*rx*1.05, py = cy + b*ry*0.6;
+    const px = cx + a*rx*1.05 - (a > 0 ? tilt*rx : 0), py = cy + b*ry*0.6 + b*tilt*rx*0.3;
     ctx.fillRect(px - 6, py - hp, 12, hp);
     ctx.fillStyle = '#ffd54f';
     ctx.beginPath(); ctx.arc(px, py - hp, 7, 0, 7); ctx.fill();
@@ -808,43 +841,117 @@ function drawFight(){
   ctx.beginPath();
   const ring = [[-1,-1],[1,-1],[1,1],[-1,1]];
   ring.forEach(([a,b], i) => {
-    const px = cx + a*rx*1.05, py = cy + b*ry*0.6 - hp;
+    const px = cx + a*rx*1.05 - (a > 0 ? tilt*rx : 0), py = cy + b*ry*0.6 + b*tilt*rx*0.3 - hp;
     i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
   });
   ctx.closePath(); ctx.stroke();
-  // 守门王站在高台中央（随关卡换色、后期体型更大）
+  // 守门王
   const bc = level.bossColor || '#8e24aa';
   const kH = Math.min(H*0.3, 200) * ((level.bossBig || 2.4) / 2.4);
   const ky = cy - ry*0.2;
-  drawFigure(cx, ky, kH, 0, bc);
-  // 王的血量牌
-  const bs = '👑' + Math.max(0, level.boss), kbh = 52, kbw = kbh + bs.length*16;
-  const kby = ky - kH*2.4 - 30;
-  ctx.fillStyle = bc;
-  ctx.beginPath(); ctx.roundRect(cx - kbw/2, kby - kbh/2, kbw, kbh, kbh/2); ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 3; ctx.stroke();
-  bigText(bs, cx, kby + 1, 40, '#fff');
-  // 我方小人从台下往上涌
-  const cc = crowdColor(), show = Math.min(crowd, 42);
-  const surge = Math.min(1, finT * 0.35);
-  const baseY = H*0.94 - surge*H*0.13;
-  for(let i = 0; i < show; i++){
-    const rr2 = Math.sqrt((i + 0.5) / show);
-    const aa = i * 2.399963 + time * 0.2;
-    const fx = cx + Math.cos(aa) * rr2 * rx*0.9;
-    const fy = baseY - Math.abs(Math.sin(aa)) * rr2 * H*0.18 + Math.sin(time*16 + i)*6;
-    drawFigure(fx, fy, Math.max(18, H*0.045) * (1 - rr2*0.25), i*0.7, cc);
+  if(fxW){
+    // —— 胜利仪式：0~0.55s 侧倒砸地，之后趴地冒金星 ——
+    const uf = Math.min(1, eff.t / 0.55);
+    const ease = uf*uf*(3 - 2*uf);
+    const lying = uf >= 1;
+    const ang = -ease*Math.PI/2 - 0.03;                       // 仰面往左倒下
+    const sink = Math.sin(ease*Math.PI) * kH*0.08;            // 砸地瞬间轻微下挫
+    ctx.save();
+    ctx.translate(cx, ky + (lying ? kH*0.05 : sink));
+    ctx.rotate(ang);
+    if(lying) ctx.globalAlpha = Math.max(0.35, 1 - Math.max(0, eff.t - 1.1)); // 趴一会儿再淡出
+    drawFigure(0, 0, kH, 0.2, bc);
+    ctx.restore(); ctx.globalAlpha = 1;
+    // 砸地音效（只响一次）
+    if(lying && level.boomFired === undefined){
+      level.boomFired = true;
+      beep(70, .3, 'sine', .18); beep(52, .45, 'square', .09);
+    }
+    // 着地：金星/尘土向四周炸开
+    if(lying){
+      const dd = eff.t - 0.55;
+      for(let i = 0; i < 16; i++){
+        const a = i*2.399963 + 0.3;
+        const rr = 20 + dd*330 + (i%3)*20;
+        ctx.globalAlpha = Math.max(0, 1 - dd/1.15);
+        ctx.fillStyle = ['#fff','#ffe082','#ffd54f','#ffca28','#fff59d'][i%5];
+        ctx.beginPath(); ctx.arc(cx + Math.cos(a)*rr, ky + Math.abs(Math.sin(a))*22 - dd*10,
+                                 3.5 + (i%3)*2.5, 0, 7); ctx.fill();
+      }
+      ctx.globalAlpha = 1;
+      // 王冠掉在一旁，晕晕的星星在脑袋位置转
+      ctx.font = '900 ' + Math.max(16, kH*0.2) + 'px sans-serif';
+      ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.fillText('👑', cx - kH*0.85, ky + 8 + Math.sin(eff.t*9)*4, );
+      const dsw = eff.t - 0.55;
+      for(let i = 0; i < 3; i++){
+        const sa = dsw*6 + i*2.1;
+        ctx.globalAlpha = Math.max(0, 1 - dsw/0.9);
+        ctx.fillText('✨', cx - Math.cos(sa)*kH*0.5, ky + Math.sin(sa)*kH*0.08 - kH*0.12);
+      }
+      ctx.globalAlpha = 1;
+    }
+  }else if(fxL){
+    // —— 我方被团灭：王稳稳站着，我方小人被打飞、甩出去淡出 ——
+    ctx.fillStyle = 'rgba(255,60,60,.22)';                    // 王脚下红光更凶
+    ctx.beginPath(); ctx.ellipse(cx, cy + ry*0.9, rx*0.6, ry*1.7, 0, 0, 7); ctx.fill();
+    const bob = Math.sin(time*4) * kH*0.035;
+    drawFigure(cx, ky + bob, kH, 0, bc);
+    const u = Math.min(1, eff.t / 1.05);
+    for(let i = 0; i < 18; i++){
+      const a = i*2.399963 + 0.6;
+      const rr = rx*0.1 + u*(rx*1.15 + (i%4)*26);
+      const sx = cx + Math.cos(a)*rr;
+      const sy = ky - Math.sin(a)*rr*0.35 - u*u*H*0.16;
+      const ang = -u*3.4 + ((i*7)%2 ? 1 : -1)*0.5;
+      ctx.globalAlpha = Math.max(0, 1 - u*1.5);
+      ctx.save(); ctx.translate(sx, sy); ctx.rotate(ang);
+      drawFigure(0, 0, Math.max(13, kH*0.14), i*0.7, '#9e9e9e');
+      ctx.restore();
+    }
+    ctx.globalAlpha = 1;
+  }else{
+    drawFigure(cx, ky, kH, 0, bc);                             // 开打：王站在台上
   }
-  // 我方人数牌
-  const cs = String(crowd), cbh = 38, cbw = Math.max(48, 24 + cs.length*17);
-  const cby = H*0.82;
-  ctx.fillStyle = 'rgba(255,255,255,.96)';
-  ctx.beginPath(); ctx.roundRect(cx - cbw/2, cby - cbh/2, cbw, cbh, cbh/2); ctx.fill();
-  ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 2; ctx.stroke();
-  ctx.fillStyle = '#111'; ctx.font = '900 26px sans-serif';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText('我方 ' + cs, cx, cby + 1);
-  bigText('人多的一方赢！', cx, H*0.745, 42, '#ffe082');
+  // 王的血量牌（打起来和打输时显示；王倒地打赢了就撤掉）
+  if(!fxW && level.boss > 0){
+    const bs = '👑' + level.boss, kbh = 52, kbw = kbh + bs.length*16;
+    const kby = ky - kH*2.4 - 30;
+    ctx.fillStyle = bc;
+    ctx.beginPath(); ctx.roundRect(cx - kbw/2, kby - kbh/2, kbw, kbh, kbh/2); ctx.fill();
+    ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 3; ctx.stroke();
+    bigText(bs, cx, kby + 1, 40, '#fff');
+  }
+  // 我方小人从台下往上涌；打赢后整群欢呼跳
+  const cc = crowdColor();
+  if(crowd > 0){
+    const show = Math.min(crowd, 42);
+    const surge = Math.min(1, finT * 0.35);
+    const joy = fxW ? Math.max(0, Math.min(1, (eff.t - 0.5) * 2)) : 0;
+    const baseY = H*0.94 - surge*H*0.13;
+    for(let i = 0; i < show; i++){
+      const rr2 = Math.sqrt((i + 0.5) / show);
+      const aa = i * 2.399963 + time * 0.2;
+      const sx = cx + Math.cos(aa) * rr2 * rx*0.9;
+      const sy = baseY - Math.abs(Math.sin(aa)) * rr2 * H*0.18
+               + Math.sin(time*16 + i)*6
+               - joy * joy * Math.abs(Math.sin(time*13 + i*1.7)) * kH*0.22;   // 蹦跳欢呼
+      drawFigure(sx, sy, Math.max(18, H*0.045) * (1 - rr2*0.25), i*0.7, cc);
+    }
+    // 我方人数牌
+    const cs = String(crowd), cbh = 38, cbw = Math.max(48, 24 + cs.length*17);
+    const cby = H*0.82;
+    ctx.fillStyle = 'rgba(255,255,255,.96)';
+    ctx.beginPath(); ctx.roundRect(cx - cbw/2, cby - cbh/2, cbw, cbh, cbh/2); ctx.fill();
+    ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 2; ctx.stroke();
+    ctx.fillStyle = '#111'; ctx.font = '900 26px sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText('我方 ' + cs, cx, cby + 1);
+  }
+  // 一句话点题
+  if(!fxW && !fxL) bigText('人多的一方赢！', cx, H*0.745, 42, '#ffe082');
+  if(fxW) bigText('闯过守门王 → 冲上 ×台阶！', cx, H*0.76, 40, '#fff9c4');
+  if(fxL) bigText('小人被打散了… 多攒点人再来', cx, H*0.76, 38, '#ffccbc');
 }
 function drawFigure(x, y, h, phase, color){
   const swing = Math.sin(time*14 + phase);
@@ -1190,6 +1297,9 @@ function draw(){
   const halfW = Math.min(W * 0.15, 150);                       // 团半宽 ≈ 路宽 1/3
   const depth = Math.min(H * 0.15, h0 * 2.4);                  // 往后/往上堆多高
   const cx = SX(px, 1);
+  const heTop = hatEmoji();                                     // 选中的帽子（没戴就是空）
+  // 戴帽子的人数跟队伍一起涨：几十人时一小撮戴，几百上千人时一大片都戴
+  const hatK = heTop ? Math.max(1, Math.min(show, Math.round(Math.sqrt(crowd) * 2.2))) : 0;
   for(let i = show - 1; i >= 0; i--){                          // 先画后排(上方)，前排最后画在最前
     const rr = Math.sqrt((i + 0.5) / show);                    // 中心→外圈铺满
     const aa = i * 2.399963 + ((i * 7919) % 13) * 0.002;       // 黄金角 + 抖动，乱一点像人群
@@ -1198,7 +1308,7 @@ function draw(){
     const x = Math.max(24, Math.min(W - 24, cx + fx * rr * halfW * sc + (i % 7 - 3) * 3));
     const y = baseY - fd * rr * depth - lift;
     drawFigure(x, y, h0 * sc, i * 0.9, cColor);
-    const he = i < 8 ? hatEmoji() : '';                 // 领头几个戴帽子
+    const he = (heTop && i < hatK) ? heTop : '';          // 戴帽子的人数随队伍涨
     if(he){
       ctx.font = '900 ' + Math.max(8, h0 * 0.5 * sc) + 'px sans-serif';
       ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
