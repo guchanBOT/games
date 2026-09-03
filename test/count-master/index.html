@@ -15,19 +15,21 @@
   canvas{display:block;width:100%;height:100%}
   .hud{position:fixed;top:calc(8px + env(safe-area-inset-top));left:0;right:0;
     display:flex;justify-content:space-between;padding:0 16px;pointer-events:none;
-    color:#fff;text-shadow:0 2px 4px rgba(0,0,0,.35);font-weight:800;font-size:20px}
+    color:#fff;text-shadow:0 2px 5px rgba(0,0,0,.6),0 0 12px rgba(0,0,0,.35);
+    font-weight:900;font-size:27px}
   .overlay{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;
-    justify-content:center;background:rgba(20,30,50,.5);color:#fff;text-align:center;z-index:10}
+    justify-content:center;background:rgba(20,30,50,.55);color:#fff;text-align:center;z-index:10}
   .hidden{display:none!important}
-  button{font-size:22px;padding:14px 46px;border:none;border-radius:999px;
-    background:#ffb300;color:#5d3800;font-weight:800;box-shadow:0 4px 0 #c98a00;margin:10px}
-  button:active{transform:translateY(2px);box-shadow:0 2px 0 #c98a00}
+  button{font-size:24px;padding:16px 52px;border:none;border-radius:999px;
+    background:#ffb300;color:#5d3800;font-weight:900;box-shadow:0 5px 0 #c98a00;margin:10px}
+  button:active{transform:translateY(3px);box-shadow:0 2px 0 #c98a00}
   button:disabled{opacity:.45}
-  button.small{font-size:16px;padding:10px 24px}
+  button.small{font-size:18px;padding:12px 26px}
   button.ghost{background:#eceff1;color:#37474f;box-shadow:0 4px 0 #b0bec5}
-  .big{font-size:36px;font-weight:800;margin-bottom:6px;text-shadow:0 2px 6px rgba(0,0,0,.4)}
-  .stars{font-size:46px;letter-spacing:10px;margin:10px 0;min-height:56px}
-  .tip{opacity:.9;margin-bottom:10px;font-size:16px}
+  .big{font-size:46px;font-weight:900;margin-bottom:8px;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+  .stars{font-size:60px;letter-spacing:12px;margin:12px 0;min-height:70px}
+  .tip{opacity:.95;margin-bottom:10px;font-size:20px;font-weight:700;
+    text-shadow:0 1px 4px rgba(0,0,0,.4)}
 </style>
 </head>
 <body>
@@ -47,7 +49,7 @@
   </div>
   <div id="menuStars" class="stars"></div>
   <div class="tip">移动鼠标 / 滑动手指 / 按住 ← →<br>选更划算的门，带最多小人冲过终点！</div>
-  <div id="menuCoins" style="font-size:20px;font-weight:800"></div>
+  <div id="menuCoins" style="font-size:28px;font-weight:900"></div>
   <button id="btnStart">开 始</button>
   <button id="btnUp" class="ghost small"></button>
   <button id="btnUndo" class="ghost small" style="display:none"></button>
@@ -63,7 +65,7 @@
 <div id="result" class="overlay hidden">
   <div class="big" id="resTitle">太棒了！</div>
   <div class="stars" id="resStars"></div>
-  <div id="resInfo" style="font-size:20px;margin-bottom:6px"></div>
+  <div id="resInfo" style="font-size:27px;margin-bottom:6px;font-weight:800"></div>
   <button id="btnNext">下一关</button>
   <button id="btnRetry" class="ghost">再玩一次</button>
 </div>
@@ -247,12 +249,13 @@ function genLevel(n, up){
   // 关底布局：跑道结束 → 上一座擂台(守门王站中间) → 打赢后再拉开一段才到 ×台阶
   const bossZ = finishZ + 46;                    // 擂台中心
   const stairZ0 = finishZ + 150;                 // 登塔台阶，和擂台明显分开
-  const boss = Math.min(300, Math.max(8, Math.round(e * 0.5)));   // ≈你的一半人数
-  // ×台阶门槛按“撞完守门王还剩多少”来标：
-  // 把预期人数 e 大致攒到的，战后剩 e−boss≈boss，正好够上顶台 ×5
+  const boss = Math.min(300, Math.max(8, Math.floor(e * 0.5)));   // ≈你的一半人数
+  // ×台阶门槛按“撞完守门王还剩多少”来标：顶台留 20% 余量，
+  // 这样“每个门都选得差不多对”就能上顶台 ×5（而不是必须极限完美）
+  const M = Math.max(2, Math.floor((e - boss) * 0.8));
   const stairs = [];
   for(let j=1; j<=5; j++)
-    stairs.push({mult: j, need: Math.round(boss * (j-1) / 4)});
+    stairs.push({mult: j, need: Math.round(M * (j-1) / 4)});
   return {n, start, events, finishZ, length: stairZ0 + 220, theme, decos,
           speed: d.speed, par: e, bonus: d.bonus, stairs,
           stairZ0, stairT: 26,
@@ -285,6 +288,9 @@ let finT = 0, time = 0;
 
 /* ================= 每日限时（30 分钟） ================= */
 const DAY_LIMIT = 30 * 60;          // 秒
+// 测试区（/test/ 路径或带 test 参数）不限时，正式版才启用每日 30 分钟
+const TEST_BUILD = (typeof location !== 'undefined') &&
+    (/\/test\//.test(location.pathname) || /[?&]test/.test(location.search));
 function todayStr(){
   const d = new Date();
   return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0')
@@ -293,8 +299,12 @@ function todayStr(){
 const timeKey = () => 'np_time_' + todayStr();
 let usedSec = +(localStorage.getItem(timeKey()) || 0);
 let lastSave = 0, lockPending = false, lastShownMin = -1;
-function remainSec(){ return Math.max(0, DAY_LIMIT - usedSec); }
+function remainSec(){ return TEST_BUILD ? DAY_LIMIT : Math.max(0, DAY_LIMIT - usedSec); }
 function tickTimer(dt){
+  if(TEST_BUILD){
+    if(lastShownMin !== -2){ lastShownMin = -2; $('hudTime').textContent = '⏱ 不限·测试'; }
+    return;
+  }
   if(state === 'locked') return;
   usedSec += dt;
   if(time - lastSave > 2){ lastSave = time; localStorage.setItem(timeKey(), usedSec.toFixed(0)); }
@@ -646,6 +656,89 @@ function update(dt){
 }
 
 /* ================= 绘制 ================= */
+// 大字：粗体 + 深色描边，给孩子看更醒目
+function bigText(s, x, y, px, fill){
+  ctx.font = '900 ' + px + 'px sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.lineJoin = 'round';
+  ctx.strokeStyle = 'rgba(0,0,0,.55)';
+  ctx.lineWidth = Math.max(2, px * 0.16);
+  ctx.strokeText(s, x, y);
+  ctx.fillStyle = fill || '#fff';
+  ctx.fillText(s, x, y);
+}
+// 守门王大战：切到屏幕中央的“擂台特写”，高台+围绳，我方往上冲
+function drawFight(){
+  const cx = W / 2;
+  const g = ctx.createLinearGradient(0, 0, 0, H);
+  g.addColorStop(0, '#0b1526'); g.addColorStop(.6, '#16283f'); g.addColorStop(1, '#000');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
+  bigText('👑 守门王之战', cx, Math.max(44, H*0.11), Math.min(W*0.05, 46), '#ffd54f');
+  ctx.fillStyle = 'rgba(255,255,255,.06)';
+  ctx.beginPath(); ctx.arc(cx, H*0.60, Math.min(W*0.44, 420), 0, 7); ctx.fill();
+  // 高台（木质 + 抬起的影子）
+  const cy = H*0.60, rx = Math.min(W*0.36, 340), ry = rx*0.24;
+  ctx.fillStyle = 'rgba(0,0,0,.5)';
+  ctx.beginPath(); ctx.ellipse(cx, cy + ry*0.22, rx, ry, 0, 0, 7); ctx.fill();
+  ctx.fillStyle = '#9a6a2f';
+  ctx.beginPath(); ctx.ellipse(cx, cy, rx, ry, 0, 0, 7); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.35)'; ctx.lineWidth = 3; ctx.stroke();
+  ctx.fillStyle = '#c98a3a';
+  ctx.beginPath(); ctx.ellipse(cx, cy - ry*0.5, rx*0.8, ry*0.8, 0, 0, 7); ctx.fill();
+  // 四角桩
+  ctx.fillStyle = '#6b4a1f';
+  const hp = Math.min(70, H*0.11);
+  for(const [a,b] of [[-1,-1],[1,-1],[-1,1],[1,1]]){
+    const px = cx + a*rx*1.05, py = cy + b*ry*0.6;
+    ctx.fillRect(px - 6, py - hp, 12, hp);
+    ctx.fillStyle = '#ffd54f';
+    ctx.beginPath(); ctx.arc(px, py - hp, 7, 0, 7); ctx.fill();
+    ctx.fillStyle = '#6b4a1f';
+  }
+  // 围绳（四个桩顶连一圈）
+  ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 3; ctx.lineJoin = 'round';
+  ctx.beginPath();
+  const ring = [[-1,-1],[1,-1],[1,1],[-1,1]];
+  ring.forEach(([a,b], i) => {
+    const px = cx + a*rx*1.05, py = cy + b*ry*0.6 - hp;
+    i ? ctx.lineTo(px, py) : ctx.moveTo(px, py);
+  });
+  ctx.closePath(); ctx.stroke();
+  // 守门王站在高台中央（体型放大）
+  const kH = Math.min(H*0.24, 165);
+  const ky = cy - ry*0.2;
+  drawFigure(cx, ky, kH, 0, '#8e24aa');
+  // 王的血量牌
+  const bs = '👑' + Math.max(0, level.boss), kbh = 42, kbw = kbh + bs.length*13;
+  const kby = ky - kH*2.4 - 26;
+  ctx.fillStyle = '#7b1fa2';
+  ctx.beginPath(); ctx.roundRect(cx - kbw/2, kby - kbh/2, kbw, kbh, kbh/2); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#fff'; ctx.font = '900 30px sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText(bs, cx, kby + 1);
+  // 我方小人从台下往上涌
+  const cc = crowdColor(), show = Math.min(crowd, 42);
+  const surge = Math.min(1, finT * 0.35);
+  const baseY = H*0.94 - surge*H*0.13;
+  for(let i = 0; i < show; i++){
+    const rr2 = Math.sqrt((i + 0.5) / show);
+    const aa = i * 2.399963 + time * 0.2;
+    const fx = cx + Math.cos(aa) * rr2 * rx*0.9;
+    const fy = baseY - Math.abs(Math.sin(aa)) * rr2 * H*0.18 + Math.sin(time*16 + i)*6;
+    drawFigure(fx, fy, Math.max(18, H*0.045) * (1 - rr2*0.25), i*0.7, cc);
+  }
+  // 我方人数牌
+  const cs = String(crowd), cbh = 38, cbw = Math.max(48, 24 + cs.length*17);
+  const cby = H*0.82;
+  ctx.fillStyle = 'rgba(255,255,255,.96)';
+  ctx.beginPath(); ctx.roundRect(cx - cbw/2, cby - cbh/2, cbw, cbh, cbh/2); ctx.fill();
+  ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#111'; ctx.font = '900 26px sans-serif';
+  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+  ctx.fillText('我方 ' + cs, cx, cby + 1);
+  bigText('人多的一方赢！', cx, H*0.72, 32, '#ffca28');
+}
 function drawFigure(x, y, h, phase, color){
   const swing = Math.sin(time*14 + phase);
   const hipY = y - h*0.45, shoY = y - h*0.68, headR = h*0.16;
@@ -693,11 +786,8 @@ function drawGate(ev, d){
     // 面板下部一条更深的口子，做出“立在地面”的体积感
     ctx.fillStyle = danger ? 'rgba(200,30,30,.4)' : 'rgba(30,110,220,.35)';
     ctx.fillRect(x0 + (x1-x0)*0.18, y - 5*p, (x1-x0)*0.64, 6*p);
-    // 门上数字：白粗体，字号约屏高 4%
-    ctx.fillStyle = '#fff';
-    ctx.font = '800 ' + Math.max(10, Math.min(54, H*0.042) * p) + 'px sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(opLabel(op), (x0+x1)/2, y - hgt/2);
+    // 门上数字：白粗体带描边，字大约屏高 5%（醒目）
+    bigText(opLabel(op), (x0+x1)/2, y - hgt/2, Math.max(14, Math.min(70, H*0.052) * p), '#fff');
   }
   // 中间分隔立柱
   const cx0 = SX(-0.028, p), cx1 = SX(0.028, p);
@@ -752,13 +842,15 @@ function drawBoss(d){
   ctx.beginPath(); ctx.ellipse(x, y, 74*p, 24*p, 0, 0, 7); ctx.stroke();
   const figH = 54 * Math.min(1.3, H/760);
   drawFigure(x, y, figH*p*2.4, 0, '#8e24aa');                  // 紫色守门王
-  // 守门王血量牌：紫底圆角胶囊
-  const bs = '👑' + level.boss, bh2 = Math.max(13, 26*p);
-  const bw2 = bh2 + bs.length * 11*p;
-  const by = y - figH*p*2.4 - 24*p;
-  ctx.fillStyle = '#8e24aa';
+  // 守门王血量牌：紫底圆角胶囊（大、醒目）
+  const bs = '👑' + level.boss, bh2 = Math.max(16, 32*p);
+  const bw2 = bh2 + bs.length * 12*p;
+  const by = y - figH*p*2.4 - 30*p;
+  ctx.fillStyle = '#7b1fa2';
   ctx.beginPath(); ctx.roundRect(x - bw2/2, by - bh2/2, bw2, bh2, bh2/2); ctx.fill();
-  ctx.fillStyle = '#fff'; ctx.font = '800 ' + Math.max(10, 19*p) + 'px sans-serif';
+  ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = Math.max(1,2*p); ctx.stroke();
+  ctx.fillStyle = '#fff';
+  ctx.font = '900 ' + Math.max(13, 24*p) + 'px sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(bs, x, by + 1);
 }
@@ -814,11 +906,9 @@ function drawStairs(){
     ctx.lineTo(x1B, y1B); ctx.lineTo(x0B, y1B);
     ctx.closePath(); ctx.fill();
     ctx.strokeStyle = 'rgba(122,80,0,.35)'; ctx.lineWidth = 1; ctx.stroke();
-    // 台上的字：×倍数 + 要多少人
-    ctx.fillStyle = '#5d3800';
-    ctx.font = '800 ' + Math.max(8, 20*pF) + 'px sans-serif';
-    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText('×' + st.mult + ' 需' + st.need + '人', (x0F+x1F)/2, (y1F+y0F)/2);
+    // 台上的字：×倍数 + 要多少人（大且醒目）
+    bigText('×' + st.mult + ' 需' + st.need + '人', (x0F+x1F)/2, (y1F+y0F)/2,
+            Math.max(11, 32*pF), '#6b3f00');
     if(j === 5){                                           // 顶台插面小旗作标识
       ctx.font = Math.max(9, 28*pB) + 'px sans-serif';
       ctx.fillText('🏁', (x0B+x1B)/2, y1B - 10*pB);
@@ -840,17 +930,19 @@ function drawEnemy(ev, d){
     const row = Math.floor(i / 4), col = i % 4;
     drawFigure(x + (col-1.5)*14*p*2, y - row*20*p - (col%2)*8*p, figH*p*0.9, i*1.3, '#b71c1c');
   }
-  // 敌方人数牌：红底圆角胶囊白字
-  const es = String(ev.n), bh = Math.max(13, 17*p);
-  const bw = Math.max(15, bh + es.length * 9*p);
-  const by = y - figH*p - 30*p - 10;
+  // 敌方人数牌：红底圆角胶囊白字（大、醒目）
+  const es = String(ev.n), bh = Math.max(16, 24*p);
+  const bw = Math.max(18, bh + es.length * 11*p);
+  const by = y - figH*p - 34*p - 10;
   ctx.fillStyle = '#c62828';
   ctx.beginPath(); ctx.roundRect(x - bw/2, by - bh/2, bw, bh, bh/2); ctx.fill();
-  ctx.fillStyle = '#fff'; ctx.font = '800 ' + Math.max(9, 15*p) + 'px sans-serif';
+  ctx.fillStyle = '#fff';
+  ctx.font = '900 ' + Math.max(12, 20*p) + 'px sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(es, x, by + 1);
 }
 function draw(){
+  if(state === 'fight' && pz >= level.bossZ){ drawFight(); return; }  // 擂台战：居中特写
   const th = level.theme;
   // 天空与地面
   const g = ctx.createLinearGradient(0,0,0,H*0.55);
@@ -929,21 +1021,19 @@ function draw(){
     const y = baseY - fd * rr * depth - lift;
     drawFigure(x, y, h0 * sc, i * 0.9, cColor);
   }
-  // 人数牌：白底圆角胶囊，跟在小队上方
-  const bx = cx, by = baseY - depth - lift - 18;
-  const tx = String(crowd), bw = Math.max(30, 18 + tx.length * 12), bh = 24;
-  ctx.fillStyle = 'rgba(255,255,255,.95)';
+  // 人数牌：白底圆角胶囊，跟在小队上方（大、醒目）
+  const bx = cx, by = baseY - depth - lift - 22;
+  const tx = String(crowd), bw = Math.max(34, 20 + tx.length * 14), bh = 28;
+  ctx.fillStyle = 'rgba(255,255,255,.96)';
   ctx.beginPath(); ctx.roundRect(bx - bw/2, by - bh/2, bw, bh, bh/2); ctx.fill();
-  ctx.strokeStyle = 'rgba(0,0,0,.15)'; ctx.lineWidth = 1.5; ctx.stroke();
-  ctx.fillStyle = '#333'; ctx.font = '800 17px sans-serif';
+  ctx.strokeStyle = 'rgba(0,0,0,.25)'; ctx.lineWidth = 2; ctx.stroke();
+  ctx.fillStyle = '#1a1a1a'; ctx.font = '900 21px sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText(tx, bx, by + 1);
-  // 浮动反馈文字
+  // 浮动反馈文字（大、带描边）
   for(const f of floats){
     ctx.globalAlpha = Math.max(0, 1 - f.age/1.3);
-    ctx.fillStyle = f.good ? '#1b9e4b' : '#e53935';
-    ctx.font = '800 34px sans-serif';
-    ctx.fillText(f.txt, bx, by - 40 - f.age*60);
+    bigText(f.txt, bx, by - 56 - f.age*80, 52, f.good ? '#2dd45f' : '#ff5252');
     ctx.globalAlpha = 1;
   }
   // 彩带
