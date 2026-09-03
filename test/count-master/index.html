@@ -50,7 +50,11 @@
   <div id="menuCoins" style="font-size:20px;font-weight:800"></div>
   <button id="btnStart">开 始</button>
   <button id="btnUp" class="ghost"></button>
-  <button id="btnColor" class="ghost">🎨 换颜色</button>
+  <div style="margin-top:14px;text-align:center">
+    <div style="font-size:14px;font-weight:700;color:#776e65;margin-bottom:6px">小人颜色</div>
+    <div id="palette" style="display:flex;gap:10px;justify-content:center;align-items:center"></div>
+    <div id="palHint" style="font-size:12px;color:#a89a8c;margin-top:6px"></div>
+  </div>
 </div>
 
 <div id="result" class="overlay hidden">
@@ -361,23 +365,42 @@ document.addEventListener('touchmove', e => e.preventDefault(), {passive:false})
 
 /* ================= 流程 ================= */
 const $ = id => document.getElementById(id);
+function paintPalette(){
+  const uc = unlockedColors(), cur = store.color() % uc;
+  const pal = $('palette'); pal.innerHTML = '';
+  for(let i = 0; i < COLORS.length; i++){
+    const unlocked = i < uc, dot = document.createElement('button');
+    dot.type = 'button';
+    dot.style.cssText = 'width:34px;height:34px;border-radius:50%;padding:0;cursor:pointer;' +
+      'border:' + (i === cur ? '3px solid #2d2a26' : '3px solid transparent') + ';' +
+      'background:' + (unlocked ? COLORS[i] : '#e8e2d5') + ';' +
+      'box-shadow:' + (i === cur ? '0 0 0 2px #fff inset' : 'none') + ';';
+    if(unlocked){
+      dot.title = '用这个颜色';
+      dot.onclick = () => { store.setColor(i); sndGood(); paintPalette(); };
+    }else{
+      dot.textContent = '🔒'; dot.style.fontSize = '14px'; dot.style.color = '#9b8f7d';
+      dot.title = '还没解锁';
+    }
+    pal.appendChild(dot);
+  }
+  const need = 6 * uc;                       // 解锁下一个颜色需要的总星数
+  const left = Math.max(0, need - totalStars());
+  $('palHint').textContent = left > 0
+    ? '再拿 ' + left + ' 颗 ⭐（攒够 ' + need + ' 颗）解锁下一个'
+    : '⭐ 每攒 6 颗解锁一个新颜色';
+}
 function refreshShop(){
   $('menuCoins').textContent = '🪙 ' + store.coins() + '　⭐ ' + totalStars();
   const cost = 20 * (store.upLvl() + 1);
   $('btnUp').textContent = '👥 开局人数 +1（' + cost + '🪙，已 +' + store.upLvl() + '）';
-  $('btnUp').className = 'ghost small';
   $('btnUp').disabled = store.coins() < cost;
-  $('btnColor').className = 'ghost small';
-  $('btnColor').textContent = '🎨 换颜色（已解锁 ' + unlockedColors() + '/' + COLORS.length + '）';
+  paintPalette();
 }
 $('btnUp').onclick = ()=>{
   const cost = 20 * (store.upLvl() + 1);
   if(store.coins() < cost) return;
   store.addCoins(-cost); store.setUpLvl(store.upLvl() + 1);
-  sndGood(); refreshShop();
-};
-$('btnColor').onclick = ()=>{
-  store.setColor((store.color() + 1) % unlockedColors());
   sndGood(); refreshShop();
 };
 
@@ -496,7 +519,7 @@ function update(dt){
         good ? sndGood() : sndBad();
         if(crowd <= 0){ endLevel(true); return; }
       }else if(ev.kind === 'coin'){
-        if(Math.abs(px - ev.x) < 0.22){
+        if(Math.abs(px - ev.x) < 0.27){
           ev.taken = true; runCoins++; store.addCoins(1);
           addFloat('+1🪙', true);
           beep(1200, .06, 'sine', .07);
@@ -629,11 +652,24 @@ function drawObs(ev, d){
 }
 function drawCoin(ev, d){
   if(ev.taken) return;
-  const p = persp(d), x = SX(ev.x, p), y = SY(d) - 14*p;
-  const r = Math.max(2, 12*p), sq = Math.abs(Math.sin(time*3 + ev.z)); // 旋转闪烁
-  ctx.fillStyle = '#ffd54f';
-  ctx.beginPath(); ctx.ellipse(x, y, Math.max(1.5, r*sq), r, 0, 0, 7); ctx.fill();
-  ctx.strokeStyle = '#c98a00'; ctx.lineWidth = Math.max(1, 2*p); ctx.stroke();
+  const p = persp(d), x = SX(ev.x, p), y = SY(d) - 16*p;
+  const r = Math.max(3, 16*p);                                  // 更大
+  const spin = Math.abs(Math.sin(time*3 + ev.z));               // 自转：侧过去变窄
+  const rx = Math.max(1.6, r*(0.35 + 0.65*spin));               // 留点厚度，不会完全消失
+  ctx.save();
+  ctx.shadowColor = 'rgba(255,205,0,.5)'; ctx.shadowBlur = Math.max(4, 8*p); // 金光辉光
+  ctx.fillStyle = '#b3800a';                                    // 暗金外圈
+  ctx.beginPath(); ctx.ellipse(x, y, rx, r, 0, 0, 7); ctx.fill();
+  ctx.shadowBlur = 0;
+  const g = ctx.createRadialGradient(x - rx*0.35, y - r*0.4, r*0.1, x, y, r*0.95); // 上缘受光
+  g.addColorStop(0, '#fff7c2'); g.addColorStop(.5, '#ffd54f'); g.addColorStop(1, '#ef9f0a');
+  ctx.fillStyle = g;
+  ctx.beginPath(); ctx.ellipse(x, y, rx*0.78, r*0.78, 0, 0, 7); ctx.fill();
+  ctx.strokeStyle = 'rgba(160,105,0,.6)'; ctx.lineWidth = Math.max(1, 1.6*p);   // 内圈压纹
+  ctx.beginPath(); ctx.ellipse(x, y, rx*0.5, r*0.5, 0, 0, 7); ctx.stroke();
+  ctx.fillStyle = 'rgba(255,255,255,.9)';                       // 受光高光点
+  ctx.beginPath(); ctx.ellipse(x - rx*0.32, y - r*0.4, Math.max(1.2, rx*0.18), Math.max(1, r*0.1), -.5, 0, 7); ctx.fill();
+  ctx.restore();
 }
 function drawBoss(d){
   const p = persp(d), x = SX(0, p), y = SY(d);
