@@ -622,7 +622,7 @@ function update(dt){
       if(!bossResult){ bossResult = 'fight'; addFloat('和守门王打起来啦！', true); sndGood(); }
       fightAcc += dt;
       const total = Math.min(crowd, level.boss);
-      const step = Math.max(1, Math.ceil(total / 90));      // 再多也在 ~5 秒内打完
+      const step = Math.max(1, Math.ceil(total / 36));      // 约 2 秒打完，人再多也不拖
       while(fightAcc > 0.05 && level.boss > 0 && crowd > 0){
         fightAcc -= 0.05;
         level.boss = Math.max(0, level.boss - step);
@@ -661,11 +661,21 @@ function bigText(s, x, y, px, fill){
   ctx.font = '900 ' + px + 'px sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.lineJoin = 'round';
-  ctx.strokeStyle = 'rgba(0,0,0,.55)';
-  ctx.lineWidth = Math.max(2, px * 0.16);
+  ctx.strokeStyle = 'rgba(0,0,0,.8)';
+  ctx.lineWidth = Math.max(2.5, px * 0.22);
   ctx.strokeText(s, x, y);
   ctx.fillStyle = fill || '#fff';
   ctx.fillText(s, x, y);
+}
+// 深色底托 + 大字（在任何底色上都清楚）
+function numPlate(s, x, y, px, fill){
+  ctx.font = '900 ' + px + 'px sans-serif';
+  const w = ctx.measureText(s).width;
+  const pad = px * 0.35, hh = px * 1.5;
+  ctx.fillStyle = 'rgba(8,14,28,.62)';
+  ctx.beginPath(); ctx.roundRect(x - w/2 - pad, y - hh/2, w + pad*2, hh, hh/2); ctx.fill();
+  ctx.strokeStyle = 'rgba(255,255,255,.25)'; ctx.lineWidth = Math.max(1, px*0.06); ctx.stroke();
+  bigText(s, x, y, px, fill);
 }
 // 守门王大战：切到屏幕中央的“擂台特写”，高台+围绳，我方往上冲
 function drawFight(){
@@ -709,14 +719,12 @@ function drawFight(){
   const ky = cy - ry*0.2;
   drawFigure(cx, ky, kH, 0, '#8e24aa');
   // 王的血量牌
-  const bs = '👑' + Math.max(0, level.boss), kbh = 42, kbw = kbh + bs.length*13;
-  const kby = ky - kH*2.4 - 26;
-  ctx.fillStyle = '#7b1fa2';
+  const bs = '👑' + Math.max(0, level.boss), kbh = 52, kbw = kbh + bs.length*16;
+  const kby = ky - kH*2.4 - 30;
+  ctx.fillStyle = '#6a1b9a';
   ctx.beginPath(); ctx.roundRect(cx - kbw/2, kby - kbh/2, kbw, kbh, kbh/2); ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = 2; ctx.stroke();
-  ctx.fillStyle = '#fff'; ctx.font = '900 30px sans-serif';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(bs, cx, kby + 1);
+  ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = 3; ctx.stroke();
+  bigText(bs, cx, kby + 1, 40, '#fff');
   // 我方小人从台下往上涌
   const cc = crowdColor(), show = Math.min(crowd, 42);
   const surge = Math.min(1, finT * 0.35);
@@ -737,7 +745,7 @@ function drawFight(){
   ctx.fillStyle = '#111'; ctx.font = '900 26px sans-serif';
   ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
   ctx.fillText('我方 ' + cs, cx, cby + 1);
-  bigText('人多的一方赢！', cx, H*0.72, 32, '#ffca28');
+  bigText('人多的一方赢！', cx, H*0.745, 42, '#ffe082');
 }
 function drawFigure(x, y, h, phase, color){
   const swing = Math.sin(time*14 + phase);
@@ -786,8 +794,8 @@ function drawGate(ev, d){
     // 面板下部一条更深的口子，做出“立在地面”的体积感
     ctx.fillStyle = danger ? 'rgba(200,30,30,.4)' : 'rgba(30,110,220,.35)';
     ctx.fillRect(x0 + (x1-x0)*0.18, y - 5*p, (x1-x0)*0.64, 6*p);
-    // 门上数字：白粗体带描边，字大约屏高 5%（醒目）
-    bigText(opLabel(op), (x0+x1)/2, y - hgt/2, Math.max(14, Math.min(70, H*0.052) * p), '#fff');
+    // 门上数字：深色底托 + 白粗字，字大约屏高 5%
+    numPlate(opLabel(op), (x0+x1)/2, y - hgt/2, Math.max(15, Math.min(72, H*0.052) * p), '#fff');
   }
   // 中间分隔立柱
   const cx0 = SX(-0.028, p), cx1 = SX(0.028, p);
@@ -843,16 +851,13 @@ function drawBoss(d){
   const figH = 54 * Math.min(1.3, H/760);
   drawFigure(x, y, figH*p*2.4, 0, '#8e24aa');                  // 紫色守门王
   // 守门王血量牌：紫底圆角胶囊（大、醒目）
-  const bs = '👑' + level.boss, bh2 = Math.max(16, 32*p);
-  const bw2 = bh2 + bs.length * 12*p;
-  const by = y - figH*p*2.4 - 30*p;
-  ctx.fillStyle = '#7b1fa2';
+  const bs = '👑' + level.boss, bh2 = Math.max(20, 42*p);
+  const bw2 = bh2 + bs.length * 15*p;
+  const by = y - figH*p*2.4 - 34*p;
+  ctx.fillStyle = '#6a1b9a';
   ctx.beginPath(); ctx.roundRect(x - bw2/2, by - bh2/2, bw2, bh2, bh2/2); ctx.fill();
-  ctx.strokeStyle = 'rgba(255,255,255,.6)'; ctx.lineWidth = Math.max(1,2*p); ctx.stroke();
-  ctx.fillStyle = '#fff';
-  ctx.font = '900 ' + Math.max(13, 24*p) + 'px sans-serif';
-  ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-  ctx.fillText(bs, x, by + 1);
+  ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.lineWidth = Math.max(2, 3*p); ctx.stroke();
+  bigText(bs, x, by + 1, Math.max(18, 30*p), '#fff');
 }
 function drawArena(){                       // 守门王的擂台：椭圆形台面 + 四角桩
   const zc = level.bossZ, d = zc - pz;
@@ -906,9 +911,9 @@ function drawStairs(){
     ctx.lineTo(x1B, y1B); ctx.lineTo(x0B, y1B);
     ctx.closePath(); ctx.fill();
     ctx.strokeStyle = 'rgba(122,80,0,.35)'; ctx.lineWidth = 1; ctx.stroke();
-    // 台上的字：×倍数 + 要多少人（大且醒目）
-    bigText('×' + st.mult + ' 需' + st.need + '人', (x0F+x1F)/2, (y1F+y0F)/2,
-            Math.max(11, 32*pF), '#6b3f00');
+    // 台上的字：×倍数 + 要多少人（深色底托白字）
+    numPlate('×' + st.mult + ' 需' + st.need + '人', (x0F+x1F)/2, (y1F+y0F)/2,
+             Math.max(13, 34*pF), '#ffd54f');
     if(j === 5){                                           // 顶台插面小旗作标识
       ctx.font = Math.max(9, 28*pB) + 'px sans-serif';
       ctx.fillText('🏁', (x0B+x1B)/2, y1B - 10*pB);
