@@ -54,6 +54,7 @@
   <button id="btnUp" class="ghost small"></button>
   <button id="btnUndo" class="ghost small" style="display:none"></button>
   <button id="btnCoin" class="ghost small"></button>
+  <button id="btnCoinUndo" class="ghost small" style="display:none"></button>
   <div style="margin-top:14px;text-align:center">
     <div style="font-size:14px;font-weight:700;color:#776e65;margin-bottom:6px">小人颜色</div>
     <div id="palette" style="display:flex;gap:10px;justify-content:center;align-items:center"></div>
@@ -487,9 +488,13 @@ function refreshShop(){
   un.style.display = lvl > 0 ? '' : 'none';
   un.textContent = '↩ 撤销上一档（退 ' + 20 * lvl + '🪙）';
   // 金币收益升级
-  const c2 = 30 * (store.coinLvl() + 1);
-  $('btnCoin').textContent = '🪙 每枚金币 +1（' + c2 + '🪙，现每枚 ' + (1 + store.coinLvl()) + '）';
+  const cl = store.coinLvl();
+  const c2 = 30 * (cl + 1);
+  $('btnCoin').textContent = '🪙 捡金币收益 +1（花 ' + c2 + '🪙，现在捡一枚得 ' + (1 + cl) + '）';
   $('btnCoin').disabled = store.coins() < c2;
+  const cu = $('btnCoinUndo');
+  cu.style.display = cl > 0 ? '' : 'none';
+  cu.textContent = '↩ 撤销金币收益（退 ' + 30 * cl + '🪙）';
   paintPalette();
   paintHats();
 }
@@ -503,6 +508,12 @@ $('btnCoin').onclick = ()=>{
   const cost = 30 * (store.coinLvl() + 1);
   if(store.coins() < cost) return;
   store.addCoins(-cost); store.setCoinLvl(store.coinLvl() + 1);
+  sndGood(); refreshShop();
+};
+$('btnCoinUndo').onclick = ()=>{
+  const cl = store.coinLvl();                      // 上一档买的时候花了 30*cl
+  if(cl <= 0) return;
+  store.addCoins(30 * cl); store.setCoinLvl(cl - 1);
   sndGood(); refreshShop();
 };
 $('btnUndo').onclick = ()=>{
