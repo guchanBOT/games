@@ -51,8 +51,6 @@
   <div class="tip">移动鼠标 / 滑动手指 / 按住 ← →<br>选更划算的门，带最多小人冲过终点！</div>
   <div id="menuCoins" style="font-size:28px;font-weight:900"></div>
   <button id="btnStart">开 始</button>
-  <button id="btnTour" class="ghost small" style="display:none"></button>
-  <button id="btnBig" class="ghost small" style="display:none"></button>
   <button id="btnUp" class="ghost small"></button>
   <button id="btnUndo" class="ghost small" style="display:none"></button>
   <button id="btnCoin" class="ghost small"></button>
@@ -302,51 +300,6 @@ function genLevel(n, up){
           boss, bossMax: boss, bossZ, bossColor, bossBig};
 }
 
-/* ================= 测试区：玩法体验关 =================
-   把正式关分散在各关解锁的玩法，按出现顺序集中摆到一条路上。
-   纯体验：不存星星、不推进度、打输也不影响正式进度。 */
-function buildTour(){
-  const events = [];
-  let z = 300;
-  const G = 250;
-  function gate(pair){ events.push({kind:'gate', z, pair, done:false}); z += G; }
-  function mid(o){ o.z = z - G*0.5; o.done = false; events.push(o); }
-  const start = 60;
-  // 顺序跟正式关解锁对应：减法→红刺→×2→敌人→÷2→×3→锯片→?门→×4→摆锤→三扇→双刺→岔路→两队敌人
-  gate([{t:'add',v:20},{t:'sub',v:8}]);                          // 第3关：减法
-  mid({kind:'obs', x:-0.6, w:0.34, dmg:5});                      // 第5关：贴边红刺
-  gate([{t:'mul',v:2},{t:'add',v:14}]);                          // 第5关：×2
-  mid({kind:'enemy', x:0, r:0.5, n:16});                         // 第8关：红圈敌人
-  gate([{t:'add',v:30},{t:'div',v:2}]);                          // 第12关：÷2
-  gate([{t:'mul',v:3},{t:'add',v:12}]);                          // 第9关：×3
-  mid({kind:'saw', x:0, w:0.3, dmg:6, mv:{a:0.5, s:2.4, p:0}}); // 第10关：旋转锯片
-  gate([{t:'rnd'},{t:'add',v:26}]);                              // 第9关：“?”惊喜门
-  gate([{t:'mul',v:4},{t:'add',v:55}]);                          // 第22关：×4超大门
-  mid({kind:'pend', x:0, w:0.36, dmg:8, mv:{a:0.62, s:1.8, p:0}}); // 第15关：摆锤
-  gate([{t:'sub',v:12},{t:'div',v:2},{t:'add',v:48}]);           // 第18关：三扇门
-  mid({kind:'pike', a:0.4, b:0.2, s:2.4, p:0, dmg:7});           // 第19关：双刺夹道
-  gate([{t:'sub',v:10},{t:'pass'},{t:'sub',v:34}]);              // 第20关：岔路（中间“不变”可绕）
-  mid({kind:'enemy', x:0, r:0.5, n:24});                         // 第18关起：两队敌人
-  gate([{t:'sub',v:8},{t:'mul',v:2},{t:'add',v:20}]);            // 收尾再一道三扇门
-  // 关底和正式关一样：守门王 → ×台阶
-  const finishZ = z + 60;
-  const bossZ = finishZ + 46, stairZ0 = finishZ + 150;
-  const needT = [6, 12, 20, 34, 60];
-  const stairs = [];
-  for(let j = 1; j <= 5; j++) stairs.push({mult: j, need: needT[j-1]});
-  const R = mulberry32(2024);
-  const theme = THEMES[0];
-  const decos = [];
-  for(let i = 0; i < Math.ceil((stairZ0 + 200) / 45); i++)
-    decos.push({z: i*45 + R()*25, side:(R()<0.5?-1:1)*(1.25+R()*0.9), k:R()});
-  return {n:0, tour:true, start, events, finishZ, length: stairZ0 + 220,
-          theme, decos, speed:1.0, par:500, bonus:false, stairs,
-          stairZ0, stairT:26, bossZ,
-          tourBoss: localStorage.getItem('np_boss9999') ? 9999 : 0,  // 测试开关：0=正常，9999=看失败
-          boss: Math.max(2, Math.floor(start*0.5)), bossMax: 2500,
-          bossColor: '#8e24aa', bossBig: 2.4};
-}
-
 /* ================= 主题 ================= */
 const THEMES = [
   {sky:['#7ec8f7','#d8f1ff'], ground:'#79c46b', track:'#f7e9c3', stripe:'#ecd9a8',
@@ -454,7 +407,6 @@ const hatEmoji = () => HATS[store.hat() % Math.max(1, unlockedHats())];
 let curLevel = store.unlocked;
 let runCoins = 0, bossResult = null, fightAcc = 0;
 let fightFx = null;              // 守门王战胜负的小动画：{kind:'win'|'lose', t:播放时长}
-let tour = false;                // 测试区的“玩法体验关”：不存星星、不推进度
 
 /* ================= 输入 ================= */
 let ptrX = null;
@@ -612,16 +564,8 @@ $('btnNextLv').onclick = ()=>{ if(curLevel < store.unlocked){ curLevel++; showMe
 
 function showMenu(){
   if(remainSec() <= 0){ showLock(); return; }
-  tour = false;                                   // 离开体验关
   state = 'menu';
   level = genLevel(curLevel, store.upLvl());
-  $('btnTour').style.display = TEST_BUILD ? '' : 'none';
-  $('btnTour').textContent = '🎪 体验关（一条路看完全部玩法）';
-  const bigOn = !!localStorage.getItem('np_boss9999');        // 测试小开关：体验关王=9999，专门看失败动画
-  $('btnBig').style.display = TEST_BUILD ? '' : 'none';
-  $('btnBig').textContent = bigOn
-    ? '👑 王=9999 已开（点我关掉，恢复能打赢）'
-    : '👑 体验关王调到 9999（专门看失败动画）';
   $('menuTitle').textContent = (level.bonus ? '👑 Boss 关 · ' : '') + '第 ' + curLevel + ' 关';
   $('btnPrevLv').disabled = curLevel <= 1;
   $('btnNextLv').disabled = curLevel >= store.unlocked;
@@ -634,32 +578,20 @@ function showMenu(){
   $('hudCount').textContent = '👥 ' + level.start;
   $('hudCoin').textContent = '🪙 ' + store.coins();
 }
-function launch(lev){                             // 正式关 / 体验关共用开跑
-  level = lev;
+function startLevel(){
+  if(remainSec() <= 0){ showLock(); return; }
+  level = genLevel(curLevel, store.upLvl());
   crowd = level.start; px = 0; targetX = 0; pz = 0;
   floats = []; confetti = []; finT = 0;
   runCoins = 0; bossResult = null; fightAcc = 0; fightFx = null;
   state = 'run';
   $('menu').classList.add('hidden');
   $('result').classList.add('hidden');
-  $('hudLevel').textContent = lev.tour ? '🎪 玩法体验关' : '第 ' + curLevel + ' 关';
+  $('hudLevel').textContent = '第 ' + curLevel + ' 关';
   $('hudCount').textContent = '👥 ' + crowd;
   $('hudCoin').textContent = '🪙 ' + store.coins();
-  $('btnNext').textContent = '下一关';
-}
-function startLevel(){
-  if(remainSec() <= 0){ showLock(); return; }
-  tour = false;
-  launch(genLevel(curLevel, store.upLvl()));
-}
-function startTour(){
-  if(!TEST_BUILD) return;
-  if(remainSec() <= 0){ showLock(); return; }
-  tour = true;
-  launch(buildTour());
 }
 function endLevel(fail){
-  if(tour){ finishTour(fail); return; }            // 体验关：不走正常结算，也不存进度
   state = 'over';
   let stars, title, info;
   if(fail){
@@ -705,29 +637,9 @@ function endLevel(fail){
   if(lockPending){ showLock(); return; }
   $('result').classList.remove('hidden');
 }
-function finishTour(fail){                        // 体验关的专属结算：只说明，不改存档
-  state = 'over';
-  if(fail) sndBad(); else sndWin();
-  $('resTitle').textContent = fail ? '差一点，再跑一次？' : '🎪 全部玩法都体验完啦！';
-  $('resStars').textContent = '';
-  $('resInfo').textContent = fail
-    ? '体验关不计星、不影响进度。刚才哪一步人变少了？记住：门挑划算的、别硬撞障碍、打敌人要人更多。'
-    : '减法、×2/×3/×4、÷2、?门、红刺、锯片、摆锤、双刺、敌人、三扇门、岔路都跑过了，回正式关试试手感吧！';
-  $('btnNext').classList.remove('hidden');
-  $('btnNext').textContent = '🔙 回选关';
-  $('btnRetry').textContent = '🎪 再体验一次';
-  if(lockPending){ showLock(); return; }
-  $('result').classList.remove('hidden');
-}
 $('btnStart').onclick = startLevel;
-$('btnTour').onclick = startTour;
-$('btnBig').onclick = ()=>{
-  const on = !!localStorage.getItem('np_boss9999');
-  on ? localStorage.removeItem('np_boss9999') : localStorage.setItem('np_boss9999', '1');
-  sndGood(); showMenu();
-};
-$('btnRetry').onclick = ()=>{ tour ? startTour() : startLevel(); };
-$('btnNext').onclick = ()=>{ if(tour){ showMenu(); } else { curLevel = Math.min(store.unlocked, curLevel + 1); showMenu(); } };
+$('btnRetry').onclick = startLevel;
+$('btnNext').onclick = ()=>{ curLevel = Math.min(store.unlocked, curLevel + 1); showMenu(); };
 
 function spawnConfetti(){
   for(let i=0;i<50;i++) confetti.push({
@@ -824,8 +736,6 @@ function update(dt){
       }
     }else{
       if(level.fstep === undefined){            // 开场一次性定死步长 → 固定 ~1.8 秒线性打完
-        if(level.tour) level.boss = level.tourBoss > 0 ? level.tourBoss
-                                 : Math.max(1, Math.floor(crowd * 0.5));   // 体验关默认王=一半能赢；开9999看失败动画
         level.fstep = Math.max(1, Math.ceil(Math.min(crowd, level.boss) / 36));
         addFloat('和守门王打起来啦！', true); sndGood();
       }
@@ -839,7 +749,7 @@ function update(dt){
       $('hudCount').textContent = '👥 ' + crowd;
       if(crowd > 0 && level.boss <= 0){         // 撞倒守门王：先放倒他再庆祝
         level.boss = 0; bossResult = 'win';
-        if(!level.tour){ store.addCoins(5); addFloat('+5🪙', true); }  // 体验关不发币
+        store.addCoins(5); addFloat('+5🪙', true);
         $('hudCoin').textContent = '🪙 ' + store.coins();
         fightFx = {kind:'win', t:0};
         level.fxWinT = 1.7;
