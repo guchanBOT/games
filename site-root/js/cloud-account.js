@@ -15,8 +15,9 @@
  */
 (function (w) {
   'use strict';
-  // 后端地址：等控制台把 kids-api 绑到 /api 后若域名不同，只改这里
-  var API = 'https://dudu-d5ggdwobce3add3f0-1300661794.ap-shanghai.app.tcloudbase.com/api';
+  // 后端 = 云函数 kids-api（调函数网关）。孩子设备绿网白名单需加：*.tcb-api.tencentcloudapi.com
+  var API = 'https://dudu-d5ggdwobce3add3f0-1300661794.ap-shanghai.tcb-api.tencentcloudapi.com/web';
+  var FN = 'kids-api';
   var LS_CUR = 'kid_current';      // 当前账号
   var LS_MIG = 'ka_migrated_v1';   // 旧进度迁移标记（全局一次）
   var META = '__meta';             // 命名空间内最后写入时间戳 key

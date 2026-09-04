@@ -19,6 +19,19 @@ const GAMES = { 2048: 1, cm: 1 };
 function pgExec(sql) {
   const sid = process.env.TENCENTCLOUD_SECRETID, sk = process.env.TENCENTCLOUD_SECRETKEY,
         tk = process.env.TENCENTCLOUD_SESSIONTOKEN;
+  if (!sid || !sk) return Promise.reject(new Error('no-db-cred'));
+  const host = 'tcb.tencentcloudapi.com', service = 'tcb', region = 'ap-shanghai';
+  const payload = { EnvId: ENV_ID, Sql: sql, Role: ROLE };
+  const body = JSON.stringify(payload);
+  const ts = Math.floor(Date.now() / 1000).toString();
+  const date = new Date().toISOString().slice(0, 10);
+  const ct = 'application/json; charset=utf-8';
+  const ch = `content-type:${ct}\nhost:${host}\nx-tc-action:executepgsql\n`;
+  const shs = 'content-type;host;x-tc-action';
+  const canonicalRequest = `POST\n/\n\n${ch}\n${shs}\n${sh(body)}`;
+  const scope = `${date}/${service}/tc3_request`;
+  const sts = `TC3-HMAC-SHA256\n${ts}\n${scope}\n${sh(canonicalRequest)}`;
+  const sig = crypto.createHmac('sha256', hm(hm(hm('TC3' + sk, date), service), 'tc3_request')).update(sts).digest('hex');
   const host = 'tcb.tencentcloudapi.com', service = 'tcb', region = 'ap-shanghai';
   const payload = { EnvId: ENV_ID, Sql: sql, Role: ROLE };
   const body = JSON.stringify(payload);
@@ -33,9 +46,10 @@ function pgExec(sql) {
   const sig = crypto.createHmac('sha256', hm(hm(hm('TC3' + sk, date), service), 'tc3_request')).update(sts).digest('hex');
   const headers = {
     'Content-Type': ct, 'X-TC-Action': 'ExecutePGSql', 'X-TC-Version': '2018-06-08',
-    'X-TC-Timestamp': ts, 'X-TC-Region': region, 'X-TC-Token': tk,
+    'X-TC-Timestamp': ts, 'X-TC-Region': region,
     'Authorization': `TC3-HMAC-SHA256 Credential=${sid}/${scope}, SignedHeaders=${shs}, Signature=${sig}`
   };
+  if (tk) headers['X-TC-Token'] = tk;
   return new Promise((res, rej) => {
     const req = https.request({ host, path: '/', method: 'POST', headers }, r => {
       let d = ''; r.on('data', c => d += c); r.on('end', () => {
@@ -112,24 +126,53 @@ async function doSave(body) {
   return { ok: true };
 }
 
-// ---------- 入口 ----------
+// ---------- 入口：Event 型（云函数/云函数网关） + HTTP 型（云托管容器） 二合一 ----------
+async function handleAction(body) {
+  switch (body.action) {
+    case 'login': return await doLogin(body);
+    case 'load': return await doLoad(body);
+    case 'save': return await doSave(body);
+    case '__ping__': return { ok: true, pong: Date.now(), cred: !!(process.env.TENCENTCLOUD_SECRETID) };
+    default: return { ok: false, msg: '未知操作' };
+  }
+}
+
 exports.main = async (event) => {
   const CORS = { 'Content-Type': 'application/json; charset=utf-8', 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Methods': 'POST, OPTIONS', 'Access-Control-Allow-Headers': 'Content-Type' };
   if (event && event.httpMethod === 'OPTIONS') return { statusCode: 200, headers: CORS, body: '' };
   try {
-    if (event && event.action === '__ping__') return { statusCode: 200, body: JSON.stringify({ ok: true, keys: Object.keys(event || {}) }) };
     let raw = (event && event.body) || '';
     if (event && event.isBase64Encoded) raw = Buffer.from(raw, 'base64').toString('utf8');
-    const body = (typeof raw === 'string' && raw) ? JSON.parse(raw) : {};
-    let out;
-    switch (body.action) {
-      case 'login': out = await doLogin(body); break;
-      case 'load': out = await doLoad(body); break;
-      case 'save': out = await doSave(body); break;
-      default: out = { ok: false, msg: '未知操作' };
-    }
+    const body = (typeof raw === 'string' && raw) ? JSON.parse(raw) : (typeof event === 'object' ? event : {});
+    const out = await handleAction(body);
     return { statusCode: 200, headers: CORS, body: JSON.stringify(out) };
   } catch (e) {
     return { statusCode: 200, headers: CORS, body: JSON.stringify({ ok: false, msg: '服务出错：' + (e && e.message) }) };
   }
 };
+
+// 云托管容器型：监听 PORT（云函数时设 LISTEN=1；云托管自动带 KUBERNETES_SERVICE_HOST）
+const PORT = process.env.PORT || 8080;
+if (process.env.LISTEN === '1' || process.env.KUBERNETES_SERVICE_HOST) {
+  const http = require('http');
+  http.createServer((req, res) => {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+    res.setHeader('Content-Type', 'application/json; charset=utf-8');
+    if (req.method === 'OPTIONS') { res.writeHead(200); res.end(''); return; }
+    if (req.method !== 'POST') { res.writeHead(404); res.end('{"ok":false,"msg":"only POST"}'); return; }
+    let buf = '';
+    req.on('data', c => buf += c);
+    req.on('end', async () => {
+      let body = {};
+      try { body = JSON.parse(buf || '{}'); } catch (e) { body = {}; }
+      try {
+        const out = await handleAction(body);
+        res.writeHead(200); res.end(JSON.stringify(out));
+      } catch (e) {
+        res.writeHead(200); res.end(JSON.stringify({ ok: false, msg: '服务出错：' + (e && e.message) }));
+      }
+    });
+  }).listen(PORT, () => console.log('kids-api http on :' + PORT));
+}
