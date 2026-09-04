@@ -36,7 +36,7 @@
   .tip{opacity:.95;margin-bottom:10px;font-size:20px;font-weight:700;
     text-shadow:0 1px 4px rgba(0,0,0,.4)}
 </style>
-<script src="/js/cloud-account.js"></script>
+<script>(function(){try{if(localStorage.getItem("__wipe_cm")!=="1"){localStorage.clear();localStorage.setItem("__wipe_cm","1");}}catch(e){}})</script>
 </head>
 <body>
 <div id="game"><canvas id="cv"></canvas></div>
@@ -46,7 +46,6 @@
 <div id="ctrl" style="position:fixed;right:12px;top:calc(58px + env(safe-area-inset-top));display:flex;gap:6px;z-index:6">
   <button id="btnLobby" class="mini">🎮 大厅</button>
   <button id="btnHome" class="mini">🏠 回到开头</button>
-  <button id="btnAcct" class="mini">👤</button>
 </div>
 
 <div id="lock" class="overlay hidden">
@@ -94,10 +93,7 @@
 <script>
 'use strict';
 /* 游戏版本号：bump-version.sh 会同步改 sw.js 和 manifest.json */
-const GAME_VER = '1.0.3';
-/* 账号云存档命名空间：所有本地 key 经 kcm 落到账号目录，写入自动 touch 上传 */
-const kcm = k => (typeof KidAcct !== 'undefined') ? KidAcct.key('cm', k) : k;
-const kcmTouch = () => { if (typeof KidAcct !== 'undefined') { try { KidAcct.touch('cm'); } catch (e) {} } };
+const GAME_VER = '1.0.2';
 /* ================= 基础 ================= */
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 let W = 0, H = 0;
@@ -382,14 +378,14 @@ function todayStr(){
 /* 家长重置当日限时：把 TIME_SALT 换个值（r1→r2→…），设备上的旧计时记录即作废、当天重新计 30 分钟。
    只影响计时键 cm_time_<salt>_<日期>，关卡/星星/铜锣烧等进度键（cm_unlock、cm_star_*、cm_coins…）不动。 */
 const TIME_SALT = 'r1';
-const timeKey = () => kcm('cm_time_' + TIME_SALT + '_' + todayStr());
+const timeKey = () => 'cm_time_' + TIME_SALT + '_' + todayStr();
 let usedSec = +(localStorage.getItem(timeKey()) || 0);
 let lastSave = 0, lockPending = false, lastShownMin = -1;
 function remainSec(){ return Math.max(0, DAY_LIMIT - usedSec); }
 function tickTimer(dt){
   if(state === 'locked') return;
   usedSec += dt;
-  if(time - lastSave > 2){ lastSave = time; localStorage.setItem(timeKey(), usedSec.toFixed(0)); kcmTouch(); }
+  if(time - lastSave > 2){ lastSave = time; localStorage.setItem(timeKey(), usedSec.toFixed(0)); }
   const m = Math.ceil(remainSec() / 60);
   if(m !== lastShownMin){
     lastShownMin = m;
@@ -409,20 +405,20 @@ function showLock(){
 }
 
 const store = {
-  get unlocked(){ return +(localStorage.getItem(kcm('cm_unlock')) || 1); },
-  set unlocked(v){ localStorage.setItem(kcm('cm_unlock'), v); kcmTouch(); },
-  stars(n){ return +(localStorage.getItem(kcm('cm_star_'+n)) || 0); },
-  setStars(n,s){ if(s > this.stars(n)){ localStorage.setItem(kcm('cm_star_'+n), s); kcmTouch(); } },
-  coins(){ return +(localStorage.getItem(kcm('cm_coins')) || 0); },
-  addCoins(v){ localStorage.setItem(kcm('cm_coins'), Math.max(0, this.coins() + v)); kcmTouch(); },
-  upLvl(){ return +(localStorage.getItem(kcm('cm_upstart')) || 0); },
-  setUpLvl(v){ localStorage.setItem(kcm('cm_upstart'), v); kcmTouch(); },
-  coinLvl(){ return +(localStorage.getItem(kcm('cm_coinlvl')) || 0); },
-  setCoinLvl(v){ localStorage.setItem(kcm('cm_coinlvl'), v); kcmTouch(); },
-  color(){ return +(localStorage.getItem(kcm('cm_color')) || 0); },
-  setColor(v){ localStorage.setItem(kcm('cm_color'), v); kcmTouch(); },
-  hat(){ return +(localStorage.getItem(kcm('cm_hat')) || 0); },
-  setHat(v){ localStorage.setItem(kcm('cm_hat'), v); kcmTouch(); },
+  get unlocked(){ return +(localStorage.getItem('cm_unlock') || 1); },
+  set unlocked(v){ localStorage.setItem('cm_unlock', v); },
+  stars(n){ return +(localStorage.getItem('cm_star_'+n) || 0); },
+  setStars(n,s){ if(s > this.stars(n)) localStorage.setItem('cm_star_'+n, s); },
+  coins(){ return +(localStorage.getItem('cm_coins') || 0); },
+  addCoins(v){ localStorage.setItem('cm_coins', Math.max(0, this.coins() + v)); },
+  upLvl(){ return +(localStorage.getItem('cm_upstart') || 0); },
+  setUpLvl(v){ localStorage.setItem('cm_upstart', v); },
+  coinLvl(){ return +(localStorage.getItem('cm_coinlvl') || 0); },
+  setCoinLvl(v){ localStorage.setItem('cm_coinlvl', v); },
+  color(){ return +(localStorage.getItem('cm_color') || 0); },
+  setColor(v){ localStorage.setItem('cm_color', v); },
+  hat(){ return +(localStorage.getItem('cm_hat') || 0); },
+  setHat(v){ localStorage.setItem('cm_hat', v); },
 };
 /* 小人颜色皮肤：8 款。每款一个“攒够多少总星数就解锁”的门槛，
    越往后越慢——前期两关换一色，后期要慢慢攒（第 0 款一开始就有） */
@@ -589,13 +585,10 @@ $('btnReset').onclick = ()=>{
     setTimeout(()=>{ resetArm = false; $('btnReset').textContent = '🗑 清空进度'; }, 3000);
     return;
   }
-  const u = (typeof KidAcct !== 'undefined') ? KidAcct.uid() : null;
-  const p = u ? ('ka/' + u + '/cm/') : 'cm_';
   for(let i = localStorage.length - 1; i >= 0; i--){
     const k = localStorage.key(i);
-    if(k && k.indexOf(p) === 0 && k.indexOf(p + 'cm_time_') !== 0 && k.indexOf(p + '__meta') !== 0) localStorage.removeItem(k);
+    if(k && k.indexOf('cm_') === 0 && k.indexOf('cm_time_') !== 0) localStorage.removeItem(k);
   }
-  if (u && typeof KidAcct !== 'undefined') KidAcct.pushNow('cm');
   resetArm = false; sndGood();
   $('btnReset').textContent = '已清空 ✅';
   setTimeout(()=>{ $('btnReset').textContent = '🗑 清空进度'; }, 1500);
@@ -1710,20 +1703,6 @@ function loop(now){
   draw();
   requestAnimationFrame(loop);
 }
-/* 账号云存档：登录态先迁旧进度（一次性），再从云端拉最新，回来重绘菜单 */
-function applyCloudSync(){ showMenu(); if (typeof refreshShop === 'function') refreshShop(); }
-const btnAcct = document.getElementById('btnAcct');
-function renderAcctLabel(){
-  const c = (typeof KidAcct !== 'undefined') ? KidAcct.current() : null;
-  if (btnAcct) btnAcct.textContent = (c && c.nickname) ? '👤 ' + c.nickname : '👤';
-}
-if (typeof KidAcct !== 'undefined') {
-  KidAcct.migrate();
-  KidAcct.ready('cm', applyCloudSync);
-}
-renderAcctLabel();
-if (btnAcct) btnAcct.onclick = () => { location.href = '../#account'; };
-if (typeof KidAcct !== 'undefined') KidAcct.onChange(renderAcctLabel);
 showMenu();
 requestAnimationFrame(loop);
 </script>

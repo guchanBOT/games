@@ -1,7 +1,7 @@
 /* 离线缓存（网络优先）：有网时永远拿最新版，断网才用缓存。
    版本号由 bump-version.sh 统一管理（count-master <part>），
    改游戏代码后跑一下脚本再部署，缓存名变化会清掉旧缓存。 */
-var CACHE = 'testcm-v1.0.3';
+var CACHE = 'testcm-v1.0.4';
 var FILES = ['./', './index.html', './manifest.json',
              './icon-180.png', './icon-192.png', './icon-512.png'];
 
@@ -18,7 +18,7 @@ self.addEventListener('activate', function (e) {
     caches.keys().then(function (keys) {
       return Promise.all(keys.map(function (k) {
         // 规范：只清本游戏的历史缓存，不误删大厅或其它游戏的缓存
-        return k.indexOf('testcm-') === 0 && k !== CACHE ? caches.delete(k) : null;
+        return k.indexOf('countmaster-') === 0 && k !== CACHE ? caches.delete(k) : null;
       }));
     }).then(function () { return self.clients.claim(); })
   );

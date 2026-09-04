@@ -1,7 +1,7 @@
 /* 2048 正式版离线缓存（网络优先）：
    在线时每次先向服务器要最新文件 → 部署完新版本后自动生效，不用清缓存；
    只有断网/出错时才用本地缓存兜底。 */
-var CACHE = 'test2048-v4';
+var CACHE = 'test2048-v5';
 var FILES = ['./', './index.html', './manifest.json',
              './icon-180.png', './icon-192.png', './icon-512.png'];
 
@@ -17,8 +17,8 @@ self.addEventListener('activate', function (e) {
   e.waitUntil(
     caches.keys().then(function (keys) {
       return Promise.all(keys.map(function (k) {
-        // 规范：只清本游戏历史缓存(test2048-* 及废弃的 g2048-*)，不碰其它游戏
-        var mine = k.indexOf('test2048-') === 0 || k.indexOf('g2048-') === 0;
+        // 规范：只清本游戏历史缓存(game2048-* 及废弃的 g2048-*)，不碰其它游戏
+        var mine = k.indexOf('game2048-') === 0 || k.indexOf('g2048-') === 0;
         return mine && k !== CACHE ? caches.delete(k) : null;
       }));
     }).then(function () { return self.clients.claim(); })
