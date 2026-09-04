@@ -32,18 +32,6 @@ function pgExec(sql) {
   const scope = `${date}/${service}/tc3_request`;
   const sts = `TC3-HMAC-SHA256\n${ts}\n${scope}\n${sh(canonicalRequest)}`;
   const sig = crypto.createHmac('sha256', hm(hm(hm('TC3' + sk, date), service), 'tc3_request')).update(sts).digest('hex');
-  const host = 'tcb.tencentcloudapi.com', service = 'tcb', region = 'ap-shanghai';
-  const payload = { EnvId: ENV_ID, Sql: sql, Role: ROLE };
-  const body = JSON.stringify(payload);
-  const ts = Math.floor(Date.now() / 1000).toString();
-  const date = new Date().toISOString().slice(0, 10);
-  const ct = 'application/json; charset=utf-8';
-  const ch = `content-type:${ct}\nhost:${host}\nx-tc-action:executepgsql\n`;
-  const shs = 'content-type;host;x-tc-action';
-  const canonicalRequest = `POST\n/\n\n${ch}\n${shs}\n${sh(body)}`;
-  const scope = `${date}/${service}/tc3_request`;
-  const sts = `TC3-HMAC-SHA256\n${ts}\n${scope}\n${sh(canonicalRequest)}`;
-  const sig = crypto.createHmac('sha256', hm(hm(hm('TC3' + sk, date), service), 'tc3_request')).update(sts).digest('hex');
   const headers = {
     'Content-Type': ct, 'X-TC-Action': 'ExecutePGSql', 'X-TC-Version': '2018-06-08',
     'X-TC-Timestamp': ts, 'X-TC-Region': region,
@@ -61,7 +49,16 @@ function pgExec(sql) {
     req.on('error', rej); req.write(body); req.end();
   });
 }
-function rowsOf(r) { return (r.Rows || []).map(x => JSON.parse(x)); }
+function rowsOf(r) {
+  const cols = r.Columns || [];
+  return (r.Rows || []).map(x => {
+    const arr = JSON.parse(x);
+    if (!Array.isArray(arr)) return arr;          // 已是对象直接用
+    const o = {};
+    cols.forEach((c, i) => { o[c] = arr[i]; });   // 数组 → 按列名转对象
+    return o;
+  });
+}
 
 // ---------- 密码 / token ----------
 function hashPw(pw, saltHex) { return crypto.scryptSync(pw, Buffer.from(saltHex, 'hex'), 32).toString('hex'); }

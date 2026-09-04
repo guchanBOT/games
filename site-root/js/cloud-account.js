@@ -15,9 +15,10 @@
  */
 (function (w) {
   'use strict';
-  // 后端 = 云函数 kids-api（调函数网关）。孩子设备绿网白名单需加：*.tcb-api.tencentcloudapi.com
-  var API = 'https://dudu-d5ggdwobce3add3f0-1300661794.ap-shanghai.tcb-api.tencentcloudapi.com/web';
-  var FN = 'kids-api';
+  // 后端 = 云函数 kids-api（走 CloudBase 函数网关）。孩子设备绿网白名单需加：*.tcloudbasegateway.com
+  var API = 'https://dudu-d5ggdwobce3add3f0.api.tcloudbasegateway.com/v1/functions/kids-api';
+  // 公开匿名 key（anon 角色，永不过期，可安全放前端；权限只够"调函数"，数据安全由函数内账号密码+token 保证）
+  var PK = 'eyJhbGciOiJSUzI1NiIsImtpZCI6IjJkYjhiZmQzLTdiNTEtNDA4MC1iNGFmLWZhZjdiODI3YTBiYyJ9.eyJpc3MiOiJodHRwczovL2R1ZHUtZDVnZ2R3b2JjZTNhZGQzZjAuYXAtc2hhbmdoYWkudGNiLWFwaS50ZW5jZW50Y2xvdWRhcGkuY29tIiwic3ViIjoiYW5vbiIsImF1ZCI6ImR1ZHUtZDVnZ2R3b2JjZTNhZGQzZjAiLCJleHAiOjQwOTIxNzAxMzIsImlhdCI6MTc4ODQ4NjkzMiwibm9uY2UiOiIzUnlSbGNqMlRVV3EtU2ctQjdsZVVBIiwiYXRfaGFzaCI6IjNSeVJsY2oyVFVXcS1TZy1CN2xlVUEiLCJuYW1lIjoiQW5vbnltb3VzIiwic2NvcGUiOiJhbm9ueW1vdXMiLCJwcm9qZWN0X2lkIjoiZHVkdS1kNWdnZHdvYmNlM2FkZDNmMCIsIm1ldGEiOnsicGxhdGZvcm0iOiJQdWJsaXNoYWJsZUtleSJ9LCJyb2xlIjoiYW5vbiIsImlzX2Fub255bW91cyI6dHJ1ZSwiYXBwX21ldGFkYXRhIjp7InByb3ZpZGVyIjoiYW5vbnltb3VzIiwicHJvdmlkZXJzIjpbImFub255bW91cyJdfSwidXNlcl9tZXRhZGF0YSI6eyJuYW1lIjoiQW5vbnltb3VzIn0sInVzZXJfdHlwZSI6IiIsImNsaWVudF90eXBlIjoiY2xpZW50X3VzZXIiLCJpc19zeXN0ZW1fYWRtaW4iOmZhbHNlfQ.Qjm5631LyifFFFYxQ9H3-o2_x6Fo17Cnl3fBjFODxd36ZSQ38Lz2g7z1gj4k73oE6Vj-7nePG6p06y83jrBBivZ_TqUUATjhP2cSO6Dvsy4TcKDkEH0yP77D2f2RZoE9mcsICGfkzoxWl-aeA9xW_2VRPngLDgf5_Bzgrx2Y_vJSOmuYm7tsLx7A_x_UZ2iuCXaavdVGqrVy97rhDX6su7wlCzU69Zuo8PXhphUv4NUpZW1GmD0k4kRFHu-7wCi1LHiB83LZvrTXorqb1krxL9wCwo-fib-ScZdzJgnWrgUii7iL_CXiRAZ_STuEIyxCvezPoizKdEayXjO9-OH9ig';
   var LS_CUR = 'kid_current';      // 当前账号
   var LS_MIG = 'ka_migrated_v1';   // 旧进度迁移标记（全局一次）
   var META = '__meta';             // 命名空间内最后写入时间戳 key
@@ -37,9 +38,14 @@
       var xhr = new XMLHttpRequest();
       xhr.open('POST', API, true);
       xhr.setRequestHeader('Content-Type', 'application/json');
+      xhr.setRequestHeader('Authorization', 'Bearer ' + PK);
       xhr.onload = function () {
         var j = null; try { j = JSON.parse(xhr.responseText); } catch (e) {}
-        if (xhr.status >= 200 && xhr.status < 300 && j && j.ok !== undefined) resolve(j);
+        // 网关包装：函数返回 {statusCode, body:"<json字符串>"}，把 body 解析出来
+        var out = null;
+        if (j && typeof j.body === 'string') { try { out = JSON.parse(j.body); } catch (e) {} }
+        else if (j) out = j;
+        if (xhr.status >= 200 && xhr.status < 300 && out && out.ok !== undefined) resolve(out);
         else reject(new Error('api ' + xhr.status));
       };
       xhr.onerror = function () { reject(new Error('network')); };
@@ -92,11 +98,13 @@
       apiPost({ action: 'load', token: c.token, game: game })
         .then(function (r) {
           if (!r.ok || !r.state) return;
+          var st = (typeof r.state === 'string') ? (function () { try { return JSON.parse(r.state); } catch (e) { return null; } })() : r.state;
+          if (!st) return;
           var d = dumpNs(game);
           if (r.updatedAtMs && d && d.meta && d.meta > r.updatedAtMs) return; // 本地更新
           var s = ls(), p = ns(game), k;
-          for (k in r.state) {
-            var nv = String(r.state[k]);
+          for (k in st) {
+            var nv = String(st[k]);
             // 每日限时是"单调累计"：取较大的那个，避免一台设备的旧值覆盖另一台的已用时长（时间锁被重置）
             if (k === 't2048secs' || k.indexOf('cm_time_') === 0) {
               var cv = s.getItem(p + k);
