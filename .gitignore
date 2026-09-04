@@ -1,3 +1,7 @@
 server.log
 cloudbaserc.json
 cloudbaserc.local.json
+pending/
+build-standalone.js
+deploy-run.sh
+services/

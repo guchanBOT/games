@@ -63,7 +63,10 @@
   <div id="menuStars" class="stars"></div>
   <div class="tip">移动鼠标 / 滑动手指 / 按住 ← →<br>选更划算的门，带最多小人冲过终点！</div>
   <div id="menuCoins" style="font-size:28px;font-weight:900"></div>
-  <button id="btnStart">开 始</button>
+  <div style="display:flex;align-items:center;justify-content:center;gap:14px">
+    <button id="btnStart">开 始</button>
+    <button id="menuLobby" class="ghost small">🎮 大厅</button>
+  </div>
   <button id="btnUp" class="ghost small"></button>
   <button id="btnUndo" class="ghost small" style="display:none"></button>
   <button id="btnCoin" class="ghost small"></button>
@@ -363,7 +366,7 @@ const SY = d => { const p = persp(d); return H*0.30 + (H*1.02 - H*0.30) * p; };
 
 /* ================= 游戏状态 ================= */
 let level = null, state = 'menu';   // menu | run | finish | over | locked
-const MAXC = 9999;                  // 小人人数上限（提高，避免一冲就到顶）
+const MAXC = 100000000;           // 人数“软上限”1 亿：可玩阶段等于不限（防极端值计算异常）
 let crowd = 5, px = 0, targetX = 0, pz = 0;
 let floats = [], confetti = [];
 let finT = 0, time = 0;
@@ -664,6 +667,7 @@ function endLevel(fail){
   }
   if(fail){
     sndBad();
+    $('hudCount').textContent = '👥 0';   // 输了：当前队伍人数归 0
     $('resTitle').textContent = title;
     $('resStars').textContent = '';
     $('resInfo').innerHTML = info.split('{D}').join(DORA_HTML());
@@ -692,6 +696,7 @@ $('btnNext').onclick = ()=>{
 };
 $('verTag').textContent = 'v' + GAME_VER;
 $('btnLobby').onclick = ()=>{ location.href='../'; };   // 回游戏大厅
+$('menuLobby').onclick = ()=>{ location.href='../'; };   // 每关开始页：回大厅
 $('btnHome').onclick = ()=>{ sndBad(); showMenu(); };   // 随时回开头
 
 function spawnConfetti(){
