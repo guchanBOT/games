@@ -43,5 +43,5 @@ fs.writeFileSync(process.cwd() + "/cloudbaserc.json", JSON.stringify(cfg, null, 
 '
 
 cd "$ROOT"
-cloudbase fn deploy kids-api --force --httpFn --path /api --deployMode zip 2>&1 | grep -E '✔|✖|部署成功|Error|http|路径|URL' | head -6
+cloudbase fn deploy kids-api --force --deployMode zip 2>&1 | grep -E '✔|✖|部署成功|Error' | head -5
 echo "✅ kids-api 部署完成"
