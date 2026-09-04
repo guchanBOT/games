@@ -12,7 +12,6 @@
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="lobby-icon-180.png">
 <link rel="icon" type="image/png" href="lobby-icon-192.png">
-<script src="/js/cloud-account.js"></script>
 <title>游戏大厅</title>
 <style>
   body {
@@ -22,22 +21,14 @@
     user-select:none; -webkit-user-select:none;
   }
   h1 { color:#776e65; margin:40px 0 8px; font-size:36px; }
-  .sub { color:#a89a8c; margin:0 0 16px; font-size:15px; }
-  .toolbar-row { display:flex; gap:8px; margin-bottom:12px; flex-wrap:wrap; justify-content:center; }
+  .sub { color:#a89a8c; margin:0 0 24px; font-size:15px; }
+  .toolbar { margin-bottom:20px; }
   button {
     font-family:inherit; border:none; cursor:pointer;
     background:#8f7a66; color:#f9f6f2; font-size:16px; font-weight:700;
     padding:10px 18px; border-radius:8px;
   }
   button:active { transform:scale(.96); }
-  #acct-btn { background:#e6b84c; color:#5a4632; }
-  #acct-btn.logged { background:#7fc26b; color:#fff; }
-  .guest-hint {
-    background:#fff3d9; color:#9c7a3c; font-size:14px;
-    border-radius:10px; padding:8px 14px; margin-bottom:16px;
-    width:min(92vw,560px); text-align:center;
-  }
-  .guest-hint.hidden { display:none; }
   .grid {
     display:grid; gap:16px; width:min(92vw, 560px);
     grid-template-columns:repeat(auto-fill, minmax(140px, 1fr));
@@ -51,38 +42,12 @@
   a.card:active { transform:scale(.94); }
   a.card img { width:72px; height:72px; border-radius:16px; }
   a.card div { margin-top:10px; font-weight:700; font-size:17px; }
-  /* 账号面板 */
-  .modal { position:fixed; inset:0; background:rgba(60,50,40,.45); display:flex; align-items:center; justify-content:center; z-index:9; }
-  .modal.hidden { display:none; }
-  .modal-box {
-    background:#fff; border-radius:18px; padding:24px 22px;
-    width:min(88vw,340px); position:relative; text-align:center;
-    box-shadow:0 6px 24px rgba(0,0,0,.2);
-  }
-  .modal-box .x { position:absolute; right:10px; top:8px; background:none; color:#a89a8c; font-size:20px; padding:4px 8px; }
-  .modal-box .t { font-size:20px; font-weight:800; color:#776e65; margin-bottom:14px; }
-  .modal-box .cur { font-size:18px; color:#776e65; margin:6px 0 4px; }
-  .modal-box .tip { font-size:13px; color:#a89a8c; margin:8px 0 14px; }
-  .modal-box input {
-    width:100%; box-sizing:border-box; font-size:16px; font-family:inherit;
-    padding:11px 12px; margin:6px 0; border:2px solid #e2dcd2; border-radius:8px; outline:none;
-  }
-  .modal-box input:focus { border-color:#8f7a66; }
-  .modal-box .err { color:#d9534f; font-size:13px; min-height:18px; margin:4px 0; }
-  .modal-box .row { display:flex; gap:8px; justify-content:center; margin-top:8px; }
-  .modal-box .wide { width:100%; margin-top:6px; }
-  .modal-box .ghost { background:#efe9df; color:#776e65; }
-  .modal-box .hint { font-size:12px; color:#c0b4a6; margin-top:10px; }
 </style>
 </head>
 <body>
   <h1>🎮 游戏大厅</h1>
   <p class="sub">点一个开始玩吧！</p>
-  <div class="toolbar-row">
-    <button id="fs-btn">⛶ 全屏进入</button>
-    <button id="acct-btn">👤 登录 / 换小朋友</button>
-  </div>
-  <div id="guest-hint" class="guest-hint">👤 还没登录：进度只存在这台平板上。家长点右上「登录 / 换小朋友」，登录后两个游戏的进度都会存到云端，换设备也能接着玩。</div>
+  <div class="toolbar"><button id="fs-btn">⛶ 全屏进入</button></div>
   <div class="grid">
     <!-- 以后每加一个游戏，复制下面这个卡片改三处：链接、图标、名字 -->
     <a class="card" href="./2048/">
@@ -94,87 +59,7 @@
       <div>哆啦A梦数字奔跑</div>
     </a>
   </div>
-
-  <!-- 账号面板 -->
-  <div id="acct-modal" class="modal hidden">
-    <div class="modal-box">
-      <button class="x" id="modal-close">✕</button>
-      <div id="acct-logged" class="hidden">
-        <div class="t">👧 当前小朋友</div>
-        <div class="cur"><b id="cur-name">…</b></div>
-        <p class="tip">两个游戏都会自动使用 TA 的云进度。<br>别的小朋友要玩：换一个再进游戏。</p>
-        <div class="row">
-          <button id="switch-btn">🔄 换一个</button>
-          <button id="logout-btn" class="ghost">退出登录</button>
-        </div>
-      </div>
-      <div id="acct-login">
-        <div class="t">登录小朋友</div>
-        <input id="in-name" placeholder="用户名" autocomplete="username">
-        <input id="in-pwd" type="password" placeholder="密码" autocomplete="current-password">
-        <div id="login-msg" class="err"></div>
-        <button id="do-login" class="wide">登 录</button>
-        <p class="hint">账号由家长提前建好（每个孩子一个，如 xiaobao）。</p>
-      </div>
-    </div>
-  </div>
-
 <script>
-/* 账号状态渲染 */
-var acctBtn = document.getElementById('acct-btn');
-var guestHint = document.getElementById('guest-hint');
-var modal = document.getElementById('acct-modal');
-var loggedView = document.getElementById('acct-logged');
-var loginView = document.getElementById('acct-login');
-
-function renderAcct() {
-  var c = (typeof KidAcct !== 'undefined') ? KidAcct.current() : null;
-  if (c && c.nickname) {
-    acctBtn.textContent = '👤 ' + c.nickname;
-    acctBtn.classList.add('logged');
-    guestHint.classList.add('hidden');
-  } else {
-    acctBtn.textContent = '👤 登录 / 换小朋友';
-    acctBtn.classList.remove('logged');
-    guestHint.classList.remove('hidden');
-  }
-}
-function openModal() {
-  var c = (typeof KidAcct !== 'undefined') ? KidAcct.current() : null;
-  loggedView.classList.toggle('hidden', !c);
-  loginView.classList.toggle('hidden', !!c);
-  if (c) document.getElementById('cur-name').textContent = c.nickname || c.name;
-  document.getElementById('login-msg').textContent = '';
-  modal.classList.remove('hidden');
-}
-function closeModal() { modal.classList.add('hidden'); }
-
-acctBtn.addEventListener('click', openModal);
-document.getElementById('modal-close').addEventListener('click', closeModal);
-modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
-document.getElementById('switch-btn').addEventListener('click', function () {
-  loggedView.classList.add('hidden'); loginView.classList.remove('hidden');
-});
-document.getElementById('logout-btn').addEventListener('click', function () {
-  if (typeof KidAcct !== 'undefined') KidAcct.logout();
-  closeModal(); renderAcct();
-});
-document.getElementById('do-login').addEventListener('click', function () {
-  var btn = this, msg = document.getElementById('login-msg');
-  var name = document.getElementById('in-name').value.trim();
-  var pwd = document.getElementById('in-pwd').value;
-  if (!name || !pwd) { msg.textContent = '请输入用户名和密码'; return; }
-  btn.disabled = true; msg.textContent = '登录中…';
-  KidAcct.login(name, pwd).then(function (r) {
-    btn.disabled = false;
-    if (r.ok) { closeModal(); renderAcct(); }
-    else { msg.textContent = r.msg || '登录失败'; }
-  });
-});
-
-/* 从游戏里"换小朋友"会带 #account 跳回来，自动打开面板 */
-if (location.hash === '#account') openModal();
-
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(function () {});
   // 自动换代：老 Service Worker 还在时，强制检查更新；换上新版后自动刷新一次，让用户无缝看到最新大厅
@@ -196,9 +81,6 @@ fsBtn.addEventListener('click', function () {
     (el.requestFullscreen || el.webkitRequestFullscreen).call(el);
   }
 });
-
-renderAcct();
-if (typeof KidAcct !== 'undefined') KidAcct.onChange(renderAcct);
 </script>
 </body>
 </html>

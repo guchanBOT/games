@@ -1,10 +1,9 @@
 /* 游戏大厅离线缓存（网络优先）：
    作用域：网站根目录，各游戏子目录（g2048/、count-master/…）由它们自己的 sw 负责。
    在线时每次先向服务器要最新文件 → 大厅更新后自动生效，不用清缓存；断网才用缓存兜底。 */
-var CACHE = 'lobby-v5';
+var CACHE = 'lobby-v6';
 var FILES = ['./', './index.html', './manifest.json',
-             './lobby-icon-180.png', './lobby-icon-192.png', './lobby-icon-512.png',
-             './js/cloud-account.js'];
+             './lobby-icon-180.png', './lobby-icon-192.png', './lobby-icon-512.png'];
 
 self.addEventListener('install', function (e) {
   e.waitUntil(
