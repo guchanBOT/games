@@ -1,7 +1,7 @@
 /* 2048 正式版离线缓存（网络优先）：
    在线时每次先向服务器要最新文件 → 部署完新版本后自动生效，不用清缓存；
    只有断网/出错时才用本地缓存兜底。 */
-var CACHE = 'game2048-v3';
+var CACHE = 'game2048-v4';
 var FILES = ['./', './index.html', './manifest.json',
              './icon-180.png', './icon-192.png', './icon-512.png'];
 

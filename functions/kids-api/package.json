@@ -1,0 +1,7 @@
+{
+  "name": "kids-api",
+  "version": "1.0.0",
+  "description": "孩子游戏站云端存档后端：login/load/save",
+  "main": "index.js",
+  "private": true
+}
