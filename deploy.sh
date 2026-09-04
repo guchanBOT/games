@@ -44,7 +44,7 @@ if [ "${1:-}" != "--skip-git" ]; then
   git -C "$ROOT" push -q "https://x-access-token:${GITHUB_TOKEN}@github.com/guchanBOT/games.git" main || echo "(GitHub 推送失败，可稍后手动处理)"
 fi
 
-DOMAIN="https://dudu-d5ggdwobce3add3f0-1300661794.tcloudbaseapp.com"
+DOMAIN="https://guodudu-d3gxzkpqd06a3f970-1300661794.tcloudbaseapp.com"
 echo "✅ 部署完成: $DOMAIN"
 
 # 测试区入口：只给家长自用（大厅里没有任何链接指进来）
