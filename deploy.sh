@@ -1,22 +1,24 @@
 #!/bin/bash
 # ============================================================
-# 孩子游戏网站一键部署到腾讯云 CloudBase
+# 孩子游戏网站一键部署到香港服务器 guodudugame.com（2026-09-05 迁移后流程）
 # 用法: bash deploy.sh [--skip-git]
 #   本地结构（mini_test 是 git 整仓，也是"游戏库"）:
 #     site-root/            → 线上根目录（大厅 index.html + 大厅 PWA + test/ 预览区）
 #     games/<游戏名>/       → 每个游戏一个目录，游戏本体就在里面
 #                             games/<游戏名>/assets-src = 制作素材，不会上传
 #     assets/               → 全站共用素材，不上传
-#   本脚本把两者拼成线上结构（games/<名> → 线上 /<名>/）再全量上传，
-#   所以目录名即网址路径：<游戏名> 上线后绝不能再改名/搬动。
+#   本脚本把两者拼成线上结构（games/<名> → 线上 /<名>/）再 rsync 到服务器
+#   /srv/games/（只增不删），所以目录名即网址路径：
+#   <游戏名> 上线后绝不能再改名/搬动。
 #   新增游戏 = games/ 下建目录 → 大厅加卡片 → 跑本脚本即可。
-# 密钥: /dat/user_alpha/happy_life/keys.env
+# 服务器: ubuntu@43.128.7.188（默认 SSH 密钥登录，同 backups/pull-kids.sh）
+# 密钥: /dat/user_alpha/happy_life/keys.env（GitHub 备份推送用）
 # ============================================================
 set -euo pipefail
 
 ROOT=/dat/user_alpha/happy_life/mini_test
 KEYFILE=/dat/user_alpha/happy_life/keys.env
-source "$KEYFILE"   # TCB_SECRET_ID / TCB_SECRET_KEY / TCB_ENV_ID
+source "$KEYFILE"   # GITHUB_TOKEN
 
 # 本地未提交的改动先看一眼（防止漏传）
 git -C "$ROOT" status --short | grep -v '^??' || true
@@ -33,18 +35,20 @@ for g in "$ROOT"/games/*/; do
   echo "   ↳ 打包游戏: $name/ → 线上 /$name/"
 done
 
-cloudbase login --cloudbase-api-key "$TCB_CLOUDBASE_API_KEY" -e "$TCB_ENV_ID" >/dev/null
-cloudbase hosting deploy "$STAGE" / -e "$TCB_ENV_ID" >/dev/null
+# rsync 到香港服务器（只增不删，与原 CloudBase"全量上传不删远端"语义一致）
+HK=ubuntu@43.128.7.188
+rsync -az --omit-dir-times -e "ssh -o BatchMode=yes" "$STAGE"/ "$HK":/srv/games/
 
 # 顺手同步 GitHub 备用仓库
 if [ "${1:-}" != "--skip-git" ]; then
   git -C "$ROOT" add -A
   git -C "$ROOT" -c user.name="guchanBOT" -c user.email="guchanBOT@users.noreply.github.com" \
       commit -q -m "自动部署: $(date +%F\ %T)" || echo "(GitHub 无改动，跳过提交)"
-  git -C "$ROOT" push -q "https://x-access-token:${GITHUB_TOKEN}@github.com/guchanBOT/games.git" main || echo "(GitHub 推送失败，可稍后手动处理)"
+  env -u http_proxy -u https_proxy -u HTTP_PROXY -u HTTPS_PROXY -u all_proxy -u ALL_PROXY \
+      git -C "$ROOT" push -q "https://x-access-token:${GITHUB_TOKEN}@github.com/guchanBOT/games.git" main || echo "(GitHub 推送失败，可稍后手动处理)"
 fi
 
-DOMAIN="https://guodudu-d8gs84w5rc5ae8312-1481373223.tcloudbaseapp.com"
+DOMAIN="https://guodudugame.com"
 echo "✅ 部署完成: $DOMAIN"
 
 # 测试区入口：只给家长自用（大厅里没有任何链接指进来）
