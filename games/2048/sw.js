@@ -1,7 +1,8 @@
-/* 2048 正式版离线缓存（网络优先）：
-   在线时每次先向服务器要最新文件 → 部署完新版本后自动生效，不用清缓存；
-   只有断网/出错时才用本地缓存兜底。 */
-var CACHE = 'game2048-v5';
+/* 2048 正式版离线缓存（缓存优先 + 后台更新）：
+   开门先用本机缓存 → 断网或平台风控（"风险提醒"/强制下载）都能正常玩；
+   后台悄悄拉新版，只有 resp.ok 才更新缓存（风控 404 不会污染缓存），下次打开自动用新版。
+   只有首次使用、或设备缓存被清时才必须联网成功一次。 */
+var CACHE = 'game2048-v6';
 var FILES = ['./', './index.html', './manifest.json',
              './icon-180.png', './icon-192.png', './icon-512.png'];
 
@@ -29,16 +30,26 @@ self.addEventListener('fetch', function (e) {
   var req = e.request;
   if (req.method !== 'GET') return;
   e.respondWith(
-    fetch(req).then(function (res) {
-      if (res && res.ok && new URL(req.url).origin === location.origin) {
-        var copy = res.clone();
-        caches.open(CACHE).then(function (c) { c.put(req, copy); });
+    caches.match(req, { ignoreSearch: true }).then(function (hit) {
+      // 后台拉新版：成功才更新缓存；失败（断网/风控 404）静默丢弃
+      var net = fetch(req).then(function (res) {
+        if (res && res.ok && new URL(req.url).origin === location.origin) {
+          var copy = res.clone();
+          caches.open(CACHE).then(function (c) { c.put(req, copy); });
+        }
+        return res;
+      }).catch(function () { return null; });
+      if (hit) {   // 有缓存：立即用缓存开门，本次不碰网络结果
+        e.waitUntil(net.then(function () {}));
+        return hit;
       }
-      return res;
-    }).catch(function () {
-      return caches.match(req).then(function (hit) {
-        return hit || caches.match(req, { ignoreSearch: true }).then(function (h2) {
-          return h2 || (req.mode === 'navigate' ? caches.match('./index.html') : undefined);
+      // 无缓存（首次/缓存被清）：只能走网络
+      return net.then(function (res) {
+        if (res) return res;
+        return caches.match('./index.html').then(function (home) {
+          return home || new Response('当前无网络，且本机还没有缓存，请联网后重试', {
+            status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+          });
         });
       });
     })

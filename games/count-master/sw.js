@@ -1,7 +1,10 @@
-/* 离线缓存（网络优先）：有网时永远拿最新版，断网才用缓存。
+/* 离线缓存（缓存优先 + 后台更新）：
+   开门先用本机缓存 → 断网或平台风控（"风险提醒"/强制下载）都能正常玩；
+   后台悄悄拉新版，只有 resp.ok 才更新缓存（风控 404 不会污染缓存），下次打开自动用新版。
+   只有首次使用、或设备缓存被清时才必须联网成功一次。
    版本号由 bump-version.sh 统一管理（count-master <part>），
    改游戏代码后跑一下脚本再部署，缓存名变化会清掉旧缓存。 */
-var CACHE = 'countmaster-v1.0.4';
+var CACHE = 'countmaster-v1.0.5';
 var FILES = ['./', './index.html', './manifest.json',
              './icon-180.png', './icon-192.png', './icon-512.png'];
 
@@ -25,16 +28,31 @@ self.addEventListener('activate', function (e) {
 });
 
 self.addEventListener('fetch', function (e) {
+  var req = e.request;
+  if (req.method !== 'GET') return;
   e.respondWith(
-    fetch(e.request).then(function (resp) {
-      // 拿到新响应就顺手更新缓存（只缓存 GET 成功响应）
-      if (e.request.method === 'GET' && resp && resp.status === 200) {
-        var copy = resp.clone();
-        caches.open(CACHE).then(function (c) { c.put(e.request, copy); });
+    caches.match(req, { ignoreSearch: true }).then(function (hit) {
+      // 后台拉新版：成功才更新缓存；失败（断网/风控 404）静默丢弃
+      var net = fetch(req).then(function (resp) {
+        if (resp && resp.ok && new URL(req.url).origin === location.origin) {
+          var copy = resp.clone();
+          caches.open(CACHE).then(function (c) { c.put(req, copy); });
+        }
+        return resp;
+      }).catch(function () { return null; });
+      if (hit) {   // 有缓存：立即用缓存开门，本次不碰网络结果
+        e.waitUntil(net.then(function () {}));
+        return hit;
       }
-      return resp;
-    }).catch(function () {
-      return caches.match(e.request, { ignoreSearch: true });
+      // 无缓存（首次/缓存被清）：只能走网络
+      return net.then(function (resp) {
+        if (resp) return resp;
+        return caches.match('./index.html').then(function (home) {
+          return home || new Response('当前无网络，且本机还没有缓存，请联网后重试', {
+            status: 503, headers: { 'Content-Type': 'text/plain; charset=utf-8' }
+          });
+        });
+      });
     })
   );
 });
