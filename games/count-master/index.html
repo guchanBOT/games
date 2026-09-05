@@ -97,7 +97,7 @@
 <script>
 'use strict';
 /* 游戏版本号：bump-version.sh 会同步改 sw.js 和 manifest.json */
-const GAME_VER = '1.0.3';
+const GAME_VER = '1.0.7';
 /* 账号云存档命名空间：所有本地 key 经 kcm 落到账号目录，写入自动 touch 上传 */
 const kcm = k => (typeof KidAcct !== 'undefined') ? KidAcct.key('cm', k) : k;
 const kcmTouch = () => { if (typeof KidAcct !== 'undefined') { try { KidAcct.touch('cm'); } catch (e) {} } };
