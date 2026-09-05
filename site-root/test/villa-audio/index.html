@@ -79,9 +79,16 @@ function pick(id, file) {
   localStorage.setItem(KEY, JSON.stringify(sel));
 }
 function exportSel() {
-  document.getElementById('out').value = JSON.stringify(sel, null, 1);
+  const txt = JSON.stringify(sel, null, 1);
+  document.getElementById('out').value = txt;
   document.getElementById('out').select();
   document.execCommand('copy');
+  // 同时下载一个文件，方便直接发给 AI
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([txt], {type: 'application/json'}));
+  a.download = 'villa_audio_sel.json';
+  a.click();
+  URL.revokeObjectURL(a.href);
 }
 </script>
 </body>
