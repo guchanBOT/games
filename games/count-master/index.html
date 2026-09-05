@@ -96,7 +96,7 @@
 <script>
 'use strict';
 /* 游戏版本号：bump-version.sh 会同步改 sw.js 和 manifest.json */
-const GAME_VER = '1.0.5';
+const GAME_VER = '1.0.6';
 /* ================= 基础 ================= */
 const cv = document.getElementById('cv'), ctx = cv.getContext('2d');
 let W = 0, H = 0;
@@ -320,14 +320,49 @@ function genLevel(n, up){
   // 关底布局：跑道结束 → 上一座擂台(胖虎站中间) → 打赢后再拉开一段才到 ×台阶
   const bossZ = finishZ + 46;                    // 擂台中心
   const stairZ0 = finishZ + 150;                 // 登塔台阶，和擂台明显分开
-  // 王血 = 预期人数 × 王系数。系数随关卡逐关变高（第1关 0.50 → 第60关 0.80），
-  // 也就是要到王面前留下“预期人数”的多少成：0.50 很容易赢 → 0.80 约等于只有
-  // 发挥到 8 成的人能赢（到王胜率从接近100% 一路压到 30–40%）。三个数是调难度用的旋钮：
-  const BOSS_F0    = 0.50;      // 起始系数（第1关）
-  const BOSS_FSTEP = 0.0051;    // 每关往上加多少
-  const BOSS_FMAX  = 0.80;      // 封顶系数（≈第60关），再往后不再变难
-  const bossF = Math.min(BOSS_FMAX, BOSS_F0 + (n - 1) * BOSS_FSTEP);
-  const boss  = Math.min(MAXC, Math.max(8, Math.floor(e * bossF)));
+  // 王血新设计（2026-09-05）：不再锚定"理论完美人数"（它随种子运气暴跳，
+  // 曾致43关王血8.8万、孩子过率仅~7%），改锚定"参考打法能带到王前的人数"。
+  // 做法：生成时用一条独立随机流 R2 模拟 40 局参考打法（8成选对门、?门结果
+  // 用 R2 定死、窄敌圈9成绕开/宽敌圈4成绕开、障碍1.5成撞上），取中位到达人数。
+  // 难度系数 g(n) 从第1关 0.55 缓升到封顶 1.15：前期随便过，后期要比参考打法
+  // 玩得更好才能赢。三个数是调难度的旋钮：
+  const BOSS_G0    = 0.55;      // 起始系数（第1关）
+  const BOSS_GSTEP = 0.0108;    // 每关往上加多少
+  const BOSS_GMAX  = 1.15;      // 封顶系数（≈第56关）
+  let boss;
+  {
+    const R2 = mulberry32(n*31337 + 7);        // 独立随机流：不动布局，同关王血恒定
+    const simRnd = c => { const r = R2();      // ?门的确定性版本（applyOp 里用的是 Math.random）
+      if(r < 0.35) return c * 2;
+      if(r < 0.6)  return c + 20 + Math.floor(R2()*20);
+      if(r < 0.8)  return Math.max(1, Math.floor(c / 2));
+      return Math.max(1, c - (5 + Math.floor(R2()*10))); };
+    const simOp = (c, op) => Math.max(0, Math.min(MAXC, op.t==='rnd' ? simRnd(c) : applyOp(c, op)));
+    const arrivals = [];
+    for(let t=0; t<40; t++){
+      let c = start;
+      for(const ev of events){
+        if(ev.kind === 'gate'){
+          const ops = ev.pair;
+          const est = op => op.t==='rnd' ? c+20 : applyOp(c, op);
+          const order = ops.map((op,i)=>({i, v: est(op)})).sort((a,b)=>b.v-a.v);
+          const pick = (R2() < 0.8) ? order[0] : order[Math.min(order.length-1, 1)];
+          c = simOp(c, ops[pick.i]);
+        }else if(ev.kind === 'enemy'){
+          const wide = (ev.r||0.45) > 0.5;
+          if(R2() < (wide ? 0.4 : 0.9)) continue;      // 绕开敌队：宽圈贴边、窄圈好绕
+          if(c > ev.n) c -= ev.n; else { c = 0; break; }
+        }else if(ev.kind === 'friend'){ c = Math.min(MAXC, c + ev.n);
+        }else if(ev.kind !== 'coin'){ if(R2() < 0.15) c = Math.max(0, c - d.obsDmg); }
+        if(c <= 0) break;
+      }
+      arrivals.push(c);
+    }
+    arrivals.sort((a,b)=>a-b);
+    const med = arrivals[Math.floor(arrivals.length/2)];
+    const g = Math.min(BOSS_GMAX, BOSS_G0 + (n - 1) * BOSS_GSTEP);
+    boss = Math.min(MAXC, Math.max(8, Math.floor(med * g)));
+  }
   // ×台阶门槛按“撞完胖虎还剩多少”来标：顶台留 20% 余量，
   // 这样“每个门都选得差不多对”就能上顶台 ×5（而不是必须极限完美）
   const M = Math.max(2, Math.floor((e - boss) * 0.8));

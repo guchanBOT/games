@@ -4,7 +4,7 @@
    只有首次使用、或设备缓存被清时才必须联网成功一次。
    版本号由 bump-version.sh 统一管理（count-master <part>），
    改游戏代码后跑一下脚本再部署，缓存名变化会清掉旧缓存。 */
-var CACHE = 'countmaster-v1.0.5';
+var CACHE = 'countmaster-v1.0.6';
 var FILES = ['./', './index.html', './manifest.json',
              './icon-180.png', './icon-192.png', './icon-512.png'];
 
