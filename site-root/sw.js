@@ -2,9 +2,10 @@
    开门先用本机缓存 → 断网或平台风控（"风险提醒"/强制下载）都能正常玩；
    后台悄悄拉新版，只有 resp.ok 才更新缓存（风控 404 不会污染缓存），下次打开自动用新版。
    只有首次使用、或设备缓存被清时才必须联网成功一次。 */
-var CACHE = 'lobby-v7';
+var CACHE = 'lobby-v8';
 var FILES = ['./', './index.html', './manifest.json',
-             './lobby-icon-180.png', './lobby-icon-192.png', './lobby-icon-512.png'];
+             './lobby-icon-180.png', './lobby-icon-192.png', './lobby-icon-512.png',
+             './js/cloud-account.js'];
 
 self.addEventListener('install', function (e) {
   e.waitUntil(

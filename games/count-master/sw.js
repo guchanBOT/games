@@ -1,10 +1,8 @@
 /* 离线缓存（缓存优先 + 后台更新）：
    开门先用本机缓存 → 断网或平台风控（"风险提醒"/强制下载）都能正常玩；
    后台悄悄拉新版，只有 resp.ok 才更新缓存（风控 404 不会污染缓存），下次打开自动用新版。
-   只有首次使用、或设备缓存被清时才必须联网成功一次。
-   版本号由 bump-version.sh 统一管理（count-master <part>），
-   改游戏代码后跑一下脚本再部署，缓存名变化会清掉旧缓存。 */
-var CACHE = 'countmaster-v1.0.6';
+   只有首次使用、或设备缓存被清时才必须联网成功一次。 */
+var CACHE = 'countmaster-v1.0.7';
 var FILES = ['./', './index.html', './manifest.json',
              './icon-180.png', './icon-192.png', './icon-512.png'];
 

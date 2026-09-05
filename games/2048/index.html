@@ -13,6 +13,7 @@
 <link rel="apple-touch-icon" href="icon-180.png">
 <link rel="icon" type="image/png" href="icon-192.png">
 <title>2048</title>
+<script src="/js/cloud-account.js"></script>
 <style>
   * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
   html, body { height:100%; }
@@ -121,6 +122,7 @@
     </div>
   </header>
   <div class="toolbar">
+    <button id="acct-btn">👤 登录</button>
     <button onclick="location.href='../'">🏠 大厅</button>
     <button id="fullscreen-btn">⛶ 全屏</button>
     <button id="newgame">🔄 新游戏</button>
@@ -139,7 +141,7 @@
     </div>
   </div>
   <p class="hint">👆 手指滑动移动方块，相同数字会合并变大！每天可以玩 30 分钟～</p>
-  <p class="ver">版本 v1.1</p>
+  <p class="ver">版本 v1.2</p>
 </div>
 
 <script>
@@ -162,22 +164,30 @@
   var tiles = [];                 // 所有还活着的方块（含待清除的）
   var metrics = { gap: 0, cell: 0 };
 
-  /* 存储容错：个别内置阅读器禁用 localStorage，退化为内存存储，保证游戏照常运行 */
+  /* 存储容错：个别内置阅读器禁用 localStorage，退化为内存存储，保证游戏照常运行。
+     所有 key 走"账号命名空间"（KidAcct.key），登录后自动落在 ka/<uid>/2048/…，未登录回落原 key（纯本地）。
+     每次写入自动触发云端同步（KidAcct.touch，防抖）。 */
+  function kaKey(k) { return (typeof KidAcct !== 'undefined') ? KidAcct.key('2048', k) : k; }
+  function kaTouch() { if (typeof KidAcct !== 'undefined') { try { KidAcct.touch('2048'); } catch (e) {} } }
   var store = (function () {
     try {
       localStorage.setItem('__t', '1'); localStorage.removeItem('__t');
-      return localStorage;
+      return {
+        getItem: function (k) { return localStorage.getItem(kaKey(k)); },
+        setItem: function (k, v) { localStorage.setItem(kaKey(k), String(v)); kaTouch(); }
+      };
     } catch (e) {
       var m = {};
       return {
         getItem: function (k) { return k in m ? m[k] : null; },
-        setItem: function (k, v) { m[k] = String(v); }
+        setItem: function (k, v) { m[kaKey(k)] = String(v); kaTouch(); }
       };
     }
   })();
 
-  // 归零（第二轮 w2）：金币/最高分/每日时长清零后正式启用。想再清一次就把 w2 改成 w3 重新部署
-  if (store.getItem('__wipe2048') !== 'w2') {
+  // 历史一次性归零只对"游客(未登录)的全局数据"生效；已登录读的是账号命名空间，绝不误清账号云档。
+  var isLogged = typeof KidAcct !== 'undefined' && !!KidAcct.uid();
+  if (!isLogged && store.getItem('__wipe2048') !== 'w2') {
     store.setItem('best2048', '0');
     store.setItem('coins2048', '0');
     store.setItem('t2048secs', '0');
@@ -673,6 +683,27 @@
   layout();
   newGame();
   renderSoundBtn();
+
+  /* 账号云存档：登录状态下从云端拉最新进度并刷新顶栏；账号按钮（点头像回大厅换人） */
+  function refreshTop() {
+    best = parseInt(store.getItem('best2048') || '0', 10); bestEl.textContent = best;
+    coins = parseInt(store.getItem('coins2048') || '0', 10); coinsEl.textContent = coins;
+    soundOn = store.getItem('sound2048') !== 'off'; renderSoundBtn();
+    loadPlayTime(); renderTimer();
+  }
+  var acctBtn = document.getElementById('acct-btn');
+  if (acctBtn) {
+    acctBtn.addEventListener('click', function () { location.href = '../#account'; });
+    function renderAcct() {
+      var c = (typeof KidAcct !== 'undefined') ? KidAcct.current() : null;
+      acctBtn.textContent = (c && c.nickname) ? '👤 ' + c.nickname : '👤 登录';
+    }
+    renderAcct();
+    if (typeof KidAcct !== 'undefined') {
+      KidAcct.onChange(renderAcct);
+      KidAcct.ready('2048', refreshTop);
+    }
+  }
 })();
 </script>
 </body>
