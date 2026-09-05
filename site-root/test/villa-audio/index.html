@@ -29,6 +29,11 @@
 const KEY = 'villa_audio_sel';
 let sel = JSON.parse(localStorage.getItem(KEY) || '{}');
 let cur = null;
+const pool = {};   // file -> 预载好的 Audio
+function getSnd(file) {
+  if (!pool[file]) { pool[file] = new Audio(file); pool[file].preload = 'auto'; pool[file].load(); }
+  return pool[file];
+}
 fetch('events.json').then(r => r.json()).then(groups => {
   const app = document.getElementById('app');
   app.innerHTML = '';
@@ -51,10 +56,22 @@ fetch('events.json').then(r => r.json()).then(groups => {
       app.appendChild(box);
     }
   }
+  // 后台预载全部音频（音效几十 KB、BGM 是 60 秒压缩片段约 700KB），点下去立刻响
+  document.querySelectorAll('.play').forEach(b => {
+    const f = b.getAttribute('onclick').match(/'([^']+)'/)[1];
+    getSnd(f);
+    b.textContent = '▶';
+  });
 });
 function playSnd(file, btn) {
   if (cur) { cur.pause(); cur.currentTime = 0; }
-  cur = new Audio(file);
+  document.querySelectorAll('.play').forEach(b => { if (b !== btn) b.textContent = '▶'; });
+  cur = getSnd(file);
+  btn.textContent = '⏳';
+  const restore = () => { btn.textContent = '▶'; };
+  cur.onplaying = restore;
+  cur.onerror = restore;
+  cur.currentTime = 0;
   cur.play();
 }
 function pick(id, file) {
