@@ -1,5 +1,212 @@
 [
  {
+  "cat": "背景音乐 · 大区一 门面迎客（尤克里里，明亮迎宾）",
+  "events": [
+   {
+    "id": "bgm1",
+    "label": "大区一 门面迎客（尤克里里，明亮迎宾）",
+    "files": [
+     {
+      "file": "snd/bgm1_a.mp3",
+      "name": "Carefree"
+     },
+     {
+      "file": "snd/bgm1_b.mp3",
+      "name": "Life of Riley"
+     },
+     {
+      "file": "snd/bgm1_c.mp3",
+      "name": "Carpe Diem"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "cat": "背景音乐 · 大区二 待客餐厨（爵士 swing，热闹厨房）",
+  "events": [
+   {
+    "id": "bgm2",
+    "label": "大区二 待客餐厨（爵士 swing，热闹厨房）",
+    "files": [
+     {
+      "file": "snd/bgm2_a.mp3",
+      "name": "No Good Layabout"
+     },
+     {
+      "file": "snd/bgm2_b.mp3",
+      "name": "Local Forecast"
+     },
+     {
+      "file": "snd/bgm2_c.mp3",
+      "name": "Zazie"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "cat": "背景音乐 · 大区三 住宿区（木吉他+钢琴，温馨居家）",
+  "events": [
+   {
+    "id": "bgm3",
+    "label": "大区三 住宿区（木吉他+钢琴，温馨居家）",
+    "files": [
+     {
+      "file": "snd/bgm3_a.mp3",
+      "name": "Sunshine"
+     },
+     {
+      "file": "snd/bgm3_b.mp3",
+      "name": "Porch Swing Days - slower"
+     },
+     {
+      "file": "snd/bgm3_c.mp3",
+      "name": "Last Kiss Goodnight"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "cat": "背景音乐 · 大区四 文娱馆（马林巴，俏皮玩耍）",
+  "events": [
+   {
+    "id": "bgm4",
+    "label": "大区四 文娱馆（马林巴，俏皮玩耍）",
+    "files": [
+     {
+      "file": "snd/bgm4_a.mp3",
+      "name": "Monkeys Spinning Monkeys"
+     },
+     {
+      "file": "snd/bgm4_b.mp3",
+      "name": "Fluffing a Duck"
+     },
+     {
+      "file": "snd/bgm4_c.mp3",
+      "name": "The Builder"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "cat": "背景音乐 · 大区五 花园群（长笛+竖琴，清新自然）",
+  "events": [
+   {
+    "id": "bgm5",
+    "label": "大区五 花园群（长笛+竖琴，清新自然）",
+    "files": [
+     {
+      "file": "snd/bgm5_a.mp3",
+      "name": "Morning"
+     },
+     {
+      "file": "snd/bgm5_b.mp3",
+      "name": "Frozen Star"
+     },
+     {
+      "file": "snd/bgm5_c.mp3",
+      "name": "Skye Cuillin"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "cat": "背景音乐 · 大区六 泳池派对（钢鼓热带，动感）",
+  "events": [
+   {
+    "id": "bgm6",
+    "label": "大区六 泳池派对（钢鼓热带，动感）",
+    "files": [
+     {
+      "file": "snd/bgm6_a.mp3",
+      "name": "Beachfront Celebration"
+     },
+     {
+      "file": "snd/bgm6_b.mp3",
+      "name": "Chee Zee Beach"
+     },
+     {
+      "file": "snd/bgm6_c.mp3",
+      "name": "Island Meet and Greet"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "cat": "背景音乐 · 大区七 海岸群（哨笛吉他，海风冒险）",
+  "events": [
+   {
+    "id": "bgm7",
+    "label": "大区七 海岸群（哨笛吉他，海风冒险）",
+    "files": [
+     {
+      "file": "snd/bgm7_a.mp3",
+      "name": "Galway"
+     },
+     {
+      "file": "snd/bgm7_b.mp3",
+      "name": "Celtic Impulse"
+     },
+     {
+      "file": "snd/bgm7_c.mp3",
+      "name": "Master of the Feast"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "cat": "背景音乐 · 大区八 后勤与屋顶（八音盒弦乐，星空梦幻）",
+  "events": [
+   {
+    "id": "bgm8",
+    "label": "大区八 后勤与屋顶（八音盒弦乐，星空梦幻）",
+    "files": [
+     {
+      "file": "snd/bgm8_a.mp3",
+      "name": "Frost Waltz"
+     },
+     {
+      "file": "snd/bgm8_b.mp3",
+      "name": "Dreamy Flashback"
+     },
+     {
+      "file": "snd/bgm8_c.mp3",
+      "name": "The Snow Queen"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "cat": "背景音乐 · 晚安页（摇篮曲，舒缓收场）",
+  "events": [
+   {
+    "id": "bgm9",
+    "label": "晚安页（摇篮曲，舒缓收场）",
+    "files": [
+     {
+      "file": "snd/bgm9_a.mp3",
+      "name": "Gymnopedie No. 1"
+     },
+     {
+      "file": "snd/bgm9_b.mp3",
+      "name": "Dreamer"
+     },
+     {
+      "file": "snd/bgm9_c.mp3",
+      "name": "Windswept"
+     }
+    ]
+   }
+  ]
+ },
+ {
   "cat": "合成",
   "events": [
    {
