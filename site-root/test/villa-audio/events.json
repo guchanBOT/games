@@ -1,0 +1,510 @@
+[
+ {
+  "cat": "合成",
+  "events": [
+   {
+    "id": "pick",
+    "label": "拿起物品（轻\"啵\"）",
+    "files": [
+     {
+      "file": "snd/pick_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/pick_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/pick_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   },
+   {
+    "id": "drop",
+    "label": "放下物品（轻\"哒\"）",
+    "files": [
+     {
+      "file": "snd/drop_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/drop_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/drop_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   },
+   {
+    "id": "merge",
+    "label": "合成成功\"叮\"（按等级变调）",
+    "files": [
+     {
+      "file": "snd/merge_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/merge_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/merge_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   },
+   {
+    "id": "merge_top",
+    "label": "合出链顶（华丽版）",
+    "files": [
+     {
+      "file": "snd/merge_top_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/merge_top_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/merge_top_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   },
+   {
+    "id": "web_break",
+    "label": "破蛛网",
+    "files": [
+     {
+      "file": "snd/web_break_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/web_break_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/web_break_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "cat": "发射器",
+  "events": [
+   {
+    "id": "gen_pop",
+    "label": "蹦出物品",
+    "files": [
+     {
+      "file": "snd/gen_pop_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/gen_pop_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/gen_pop_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   },
+   {
+    "id": "gen_tired",
+    "label": "累了休息（滑稽叹气）",
+    "files": [
+     {
+      "file": "snd/gen_tired_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/gen_tired_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/gen_tired_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "cat": "订单",
+  "events": [
+   {
+    "id": "coins",
+    "label": "交单得金币（哗啦）",
+    "files": [
+     {
+      "file": "snd/coins_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/coins_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/coins_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   },
+   {
+    "id": "order_new",
+    "label": "新订单上门",
+    "files": [
+     {
+      "file": "snd/order_new_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/order_new_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/order_new_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   },
+   {
+    "id": "smile",
+    "label": "笑脸+1",
+    "files": [
+     {
+      "file": "snd/smile_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/smile_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/smile_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   },
+   {
+    "id": "chest_open",
+    "label": "开宝箱",
+    "files": [
+     {
+      "file": "snd/chest_open_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/chest_open_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/chest_open_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   },
+   {
+    "id": "shell_get",
+    "label": "得贝壳（叮铃）",
+    "files": [
+     {
+      "file": "snd/shell_get_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/shell_get_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/shell_get_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   },
+   {
+    "id": "fanfare_small",
+    "label": "大单完成（小庆祝）",
+    "files": [
+     {
+      "file": "snd/fanfare_small_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/fanfare_small_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/fanfare_small_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "cat": "扭蛋",
+  "events": [
+   {
+    "id": "coin_insert",
+    "label": "投贝壳",
+    "files": [
+     {
+      "file": "snd/coin_insert_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/coin_insert_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/coin_insert_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   },
+   {
+    "id": "gacha_roll",
+    "label": "扭蛋滚动（约2秒）",
+    "files": [
+     {
+      "file": "snd/gacha_roll_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/gacha_roll_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/gacha_roll_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   },
+   {
+    "id": "gacha_open",
+    "label": "开球出奖",
+    "files": [
+     {
+      "file": "snd/gacha_open_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/gacha_open_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/gacha_open_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   },
+   {
+    "id": "fanfare_big",
+    "label": "中稀有装饰/房间建成（大庆祝）",
+    "files": [
+     {
+      "file": "snd/fanfare_big_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/fanfare_big_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/fanfare_big_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "cat": "浣熊",
+  "events": [
+   {
+    "id": "raccoon_in",
+    "label": "浣熊登场（俏皮滑哨）",
+    "files": [
+     {
+      "file": "snd/raccoon_in_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/raccoon_in_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/raccoon_in_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "cat": "装修",
+  "events": [
+   {
+    "id": "clean_sweep",
+    "label": "清理（刷刷扫尘）",
+    "files": [
+     {
+      "file": "snd/clean_sweep_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/clean_sweep_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/clean_sweep_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   },
+   {
+    "id": "repair_hammer",
+    "label": "修缮（咚咚敲打）",
+    "files": [
+     {
+      "file": "snd/repair_hammer_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/repair_hammer_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/repair_hammer_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   },
+   {
+    "id": "renew_magic",
+    "label": "焕新（魔法铃）",
+    "files": [
+     {
+      "file": "snd/renew_magic_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/renew_magic_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/renew_magic_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "cat": "惊喜包",
+  "events": [
+   {
+    "id": "pack_tear",
+    "label": "拆包蹦货",
+    "files": [
+     {
+      "file": "snd/pack_tear_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/pack_tear_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/pack_tear_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   }
+  ]
+ },
+ {
+  "cat": "界面",
+  "events": [
+   {
+    "id": "btn",
+    "label": "按钮点击（啵）",
+    "files": [
+     {
+      "file": "snd/btn_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/btn_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/btn_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   },
+   {
+    "id": "page_flip",
+    "label": "翻面板/翻图鉴",
+    "files": [
+     {
+      "file": "snd/page_flip_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/page_flip_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/page_flip_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   },
+   {
+    "id": "error_deny",
+    "label": "操作被拒绝（低音嘟）",
+    "files": [
+     {
+      "file": "snd/error_deny_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/error_deny_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/error_deny_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   },
+   {
+    "id": "sleep_bell",
+    "label": "到点晚安铃",
+    "files": [
+     {
+      "file": "snd/sleep_bell_a.mp3",
+      "name": "候选 A"
+     },
+     {
+      "file": "snd/sleep_bell_b.mp3",
+      "name": "候选 B"
+     },
+     {
+      "file": "snd/sleep_bell_c.mp3",
+      "name": "候选 C"
+     }
+    ]
+   }
+  ]
+ }
+]

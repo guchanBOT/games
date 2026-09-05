@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🎧 梦幻大别墅 · 音效试听</title>
+<style>
+  body { font-family:"PingFang SC","Microsoft YaHei",Arial,sans-serif; background:#2d2a26; color:#f9f6f2; margin:0; padding:20px; }
+  h1 { font-size:26px; margin:10px 0 4px; }
+  .hint { color:#a89a8c; font-size:13px; margin-bottom:18px; line-height:1.6; }
+  .cat { margin-top:22px; font-size:19px; color:#ffca28; border-bottom:1px solid #555; padding-bottom:4px; }
+  .ev { background:#3a3631; border-radius:12px; padding:10px 14px; margin-top:10px; }
+  .ev-name { font-size:16px; font-weight:700; margin-bottom:8px; }
+  .cand { display:flex; align-items:center; gap:10px; padding:5px 0; }
+  .play { background:#ffca28; color:#2d2a26; border:none; border-radius:8px; width:44px; height:32px; font-size:16px; cursor:pointer; }
+  .play:active { transform:scale(.92); }
+  .cand label { font-size:14px; color:#d8cfc5; cursor:pointer; }
+  .export { margin-top:26px; background:#ffca28; color:#2d2a26; border:none; border-radius:12px; padding:14px 22px; font-size:16px; font-weight:700; cursor:pointer; }
+  #out { width:100%; margin-top:10px; font-size:12px; background:#221f1c; color:#9fd49f; border:none; border-radius:8px; padding:8px; min-height:60px; }
+</style>
+</head>
+<body>
+<h1>🎧 梦幻大别墅 · 音效试听</h1>
+<p class="hint">每个事件挑一个最顺耳的：点 ▶ 试听，点圆圈选中。选择自动存在本机。全挑完点最下面的"导出选择"发给 AI。<br>候选来自 Kenney.nl（CC0 免费可商用）。背景音乐候选找齐后会加在本页顶部。</p>
+<div id="app">加载中……</div>
+<button class="export" onclick="exportSel()">导出选择</button>
+<textarea id="out" readonly placeholder="导出的选择会出现在这里"></textarea>
+<script>
+const KEY = 'villa_audio_sel';
+let sel = JSON.parse(localStorage.getItem(KEY) || '{}');
+let cur = null;
+fetch('events.json').then(r => r.json()).then(groups => {
+  const app = document.getElementById('app');
+  app.innerHTML = '';
+  for (const g of groups) {
+    const c = document.createElement('div');
+    c.className = 'cat'; c.textContent = g.cat;
+    app.appendChild(c);
+    for (const ev of g.events) {
+      const box = document.createElement('div');
+      box.className = 'ev';
+      box.innerHTML = `<div class="ev-name">${ev.label} <span style="color:#a89a8c;font-size:12px">${ev.id}</span></div>`;
+      ev.files.forEach((f, i) => {
+        const row = document.createElement('div');
+        row.className = 'cand';
+        const checked = sel[ev.id] === f.file ? 'checked' : '';
+        row.innerHTML = `<button class="play" onclick="playSnd('${f.file}',this)">▶</button>
+          <label><input type="radio" name="${ev.id}" value="${f.file}" ${checked} onchange="pick('${ev.id}','${f.file}')"> ${f.name}</label>`;
+        box.appendChild(row);
+      });
+      app.appendChild(box);
+    }
+  }
+});
+function playSnd(file, btn) {
+  if (cur) { cur.pause(); cur.currentTime = 0; }
+  cur = new Audio(file);
+  cur.play();
+}
+function pick(id, file) {
+  sel[id] = file;
+  localStorage.setItem(KEY, JSON.stringify(sel));
+}
+function exportSel() {
+  document.getElementById('out').value = JSON.stringify(sel, null, 1);
+  document.getElementById('out').select();
+  document.execCommand('copy');
+}
+</script>
+</body>
+</html>
