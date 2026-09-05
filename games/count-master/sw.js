@@ -2,7 +2,7 @@
    开门先用本机缓存 → 断网或平台风控（"风险提醒"/强制下载）都能正常玩；
    后台悄悄拉新版，只有 resp.ok 才更新缓存（风控 404 不会污染缓存），下次打开自动用新版。
    只有首次使用、或设备缓存被清时才必须联网成功一次。 */
-var CACHE = 'countmaster-v1.0.7';
+var CACHE = 'countmaster-v1.0.8';
 var FILES = ['./', './index.html', './manifest.json',
              './icon-180.png', './icon-192.png', './icon-512.png'];
 

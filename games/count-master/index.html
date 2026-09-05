@@ -97,7 +97,7 @@
 <script>
 'use strict';
 /* 游戏版本号：bump-version.sh 会同步改 sw.js 和 manifest.json */
-const GAME_VER = '1.0.7';
+const GAME_VER = '1.0.8';
 /* 账号云存档命名空间：所有本地 key 经 kcm 落到账号目录，写入自动 touch 上传 */
 const kcm = k => (typeof KidAcct !== 'undefined') ? KidAcct.key('cm', k) : k;
 const kcmTouch = () => { if (typeof KidAcct !== 'undefined') { try { KidAcct.touch('cm'); } catch (e) {} } };
@@ -328,6 +328,7 @@ function genLevel(n, up){
   // 曾致43关王血8.8万、孩子过率仅~7%），改锚定"参考打法能带到王前的人数"。
   // 做法：生成时用一条独立随机流 R2 模拟 40 局参考打法（8成选对门、?门结果
   // 用 R2 定死、窄敌圈9成绕开/宽敌圈4成绕开、障碍1.5成撞上），取中位到达人数。
+  //  （半数以上中途失败时中位会塌成0→王血被兜成8、像坏了一样：此时改看"活着到王前"的队伍中位）
   // 难度系数 g(n) 从第1关 0.55 缓升到封顶 1.15：前期随便过，后期要比参考打法
   // 玩得更好才能赢。三个数是调难度的旋钮：
   const BOSS_G0    = 0.55;      // 起始系数（第1关）
@@ -363,7 +364,10 @@ function genLevel(n, up){
       arrivals.push(c);
     }
     arrivals.sort((a,b)=>a-b);
-    const med = arrivals[Math.floor(arrivals.length/2)];
+    let med = arrivals[Math.floor(arrivals.length/2)];
+    if(med <= 0){ const alive = arrivals.filter(c => c > 0);   // 多数局中途被打散→中位=0，改取活着到胖虎的队伍中位
+      if(alive.length) med = alive[Math.floor(alive.length/2)];
+    }
     const g = Math.min(BOSS_GMAX, BOSS_G0 + (n - 1) * BOSS_GSTEP);
     boss = Math.min(MAXC, Math.max(8, Math.floor(med * g)));
   }
